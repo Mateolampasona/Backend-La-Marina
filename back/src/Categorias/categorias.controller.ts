@@ -1,6 +1,15 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { CategoriasService } from './categorias.service';
+import { CreateCategoryDto } from './dto/createCategory.dto';
 
 @Controller('categorias')
 export class CategoriasController {
@@ -9,8 +18,20 @@ export class CategoriasController {
   // Rutas
   @Get()
   @HttpCode(HttpStatus.OK)
-  async getCategorias() {
-    const categorias = await this.categoriasService.getCategorias();
-    return categorias;
+  getCategory() {
+    const categories = this.categoriasService.getCategory();
+    return categories;
+  }
+
+  @Get(':id')
+  @HttpCode(HttpStatus.OK)
+  getCategoryById(@Param('id') id: string) {
+    const category = this.categoriasService.getCategoryById(id);
+    return category;
+  }
+
+  @Post()
+  createCategory(@Body() createCategoryDto: CreateCategoryDto) {
+    return this.categoriasService.createCategory(createCategoryDto);
   }
 }

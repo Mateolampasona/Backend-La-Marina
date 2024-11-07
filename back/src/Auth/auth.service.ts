@@ -16,19 +16,18 @@ export class AuthService {
 
   // Iniciar sesión
   async signIn(credential: SignInAuthDto) {
-    const dbUser = await this.userService.findOneByEmail(credential.email);
-    if (!dbUser) {
-      throw new NotFoundException('Usuario no encontrado');
-    }
-    const isPasswordValid = await bcrypt.compare(
-      credential.password,
-      dbUser.password,
-    );
-
-    if (!isPasswordValid) {
-      throw new BadRequestException('Contraseña invalida');
-    }
-    return { success: 'Usuario logueado correctamente' };
+    // const dbUser = await this.userService.findOneByEmail(credential.email);
+    // if (!dbUser) {
+    //   throw new NotFoundException('Usuario no encontrado');
+    // }
+    // const isPasswordValid = await bcrypt.compare(
+    //   credential.password,
+    //   dbUser.password,
+    // );
+    // if (!isPasswordValid) {
+    //   throw new BadRequestException('Contraseña invalida');
+    // }
+    // return { success: 'Usuario logueado correctamente' };
   }
 
   // Registrar usuario
