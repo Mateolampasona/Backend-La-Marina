@@ -15,3 +15,6 @@ dotenv
 @nestjs/common
 @nestjs/express
 uuid
+npm install --save-dev @types/multer
+npm i buffer-to-stream
+cloudinary

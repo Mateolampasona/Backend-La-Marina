@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { SignInAuthDto } from './dto/IniciarSesion.dto';
 import { CreateUserDto } from './dto/CrearUsuario.dto';
-import { UsersService } from 'src/Usuarios/usuarios.services';
+import { UsersService } from 'src/Users/users.services';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()

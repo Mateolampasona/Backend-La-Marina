@@ -1,13 +1,12 @@
 /* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
-import { ProductosModule } from './Productos/productos.module';
-import { UsuariosModule } from './Usuarios/usuarios.module';
+import { ProductsModule } from './Products/productos.module';
+import { UsersModule } from './Users/users.module';
 import { AuthModule } from './Auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import TypeOrmConfig from './config/data-source';
-import { SeedsModule } from './seeds/seeds.module';
-import { CategoriasModule } from './Categorias/categorias.module';
+import TypeOrmConfig from './Config/data-source';
+import { CategoriesModule } from './Categories/categories.module';
 
 @Module({
   imports: [
@@ -20,10 +19,9 @@ import { CategoriasModule } from './Categorias/categorias.module';
       useFactory: (configService: ConfigService) =>
         configService.get('typeorm'),
     }),
-    SeedsModule,
-    ProductosModule,
-    CategoriasModule,
-    UsuariosModule,
+    ProductsModule,
+    CategoriesModule,
+    UsersModule,
     AuthModule,
   ],
   controllers: [],

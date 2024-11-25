@@ -1,19 +1,24 @@
 /* eslint-disable prettier/prettier */
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { loggerGlobal } from './middlewares/logger.middleware';
-import { CategoriesSeed } from './seeds/categories/categories.seed';
-import { ProductSeed } from './seeds/products/products.seed';
+import { loggerGlobal } from './Middlewares/logger.middleware';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const categoriesSeed = app.get(CategoriesSeed);
-  await categoriesSeed.seed();
-  console.log('La inserción de categorias ha terminado');
-  const productSeed = app.get(ProductSeed);
-  await productSeed.seed();
-  console.log('La inserción de productos ha terminado');
-
+  const config = new DocumentBuilder()
+    .setTitle('API de La Marina')
+    .setDescription('Documentación de la API de La Marina')
+    .setVersion('1.0')
+    .addTag('La Marina')
+    // .addBearerAuth({
+    //   type: 'http',
+    //   scheme: 'bearer',
+    //   bearerFormat: 'JWT',
+    // })
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
   app.use(loggerGlobal);
   await app.listen(3000);
 }
