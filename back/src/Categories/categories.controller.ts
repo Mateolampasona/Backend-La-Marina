@@ -11,18 +11,18 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { CategoriasService } from './categories.service';
+import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/createCategory.dto';
 
-@Controller('categorias')
-export class CategoriasController {
-  constructor(private readonly categoriasService: CategoriasService) {}
+@Controller('categories')
+export class CategoriesController {
+  constructor(private readonly categoriesService: CategoriesService) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)
   getCategory() {
     try {
-      return this.categoriasService.getCategory();
+      return this.categoriesService.getCategory();
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -32,16 +32,16 @@ export class CategoriasController {
   @HttpCode(HttpStatus.OK)
   getCategoryById(@Param('id') categoryId: number) {
     try {
-      return this.categoriasService.getCategoryById(categoryId);
+      return this.categoriesService.getCategoryById(categoryId);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
 
-  @Post()
+  @Post('create')
   createCategory(@Body() createCategoryDto: CreateCategoryDto) {
     try {
-      return this.categoriasService.createCategory(createCategoryDto);
+      return this.categoriesService.createCategory(createCategoryDto);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -50,7 +50,7 @@ export class CategoriasController {
   @Delete(':id')
   deleteCategory(@Param('id') categoryId: number) {
     try {
-      return this.categoriasService.deleteCategory(categoryId);
+      return this.categoriesService.deleteCategory(categoryId);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -62,7 +62,7 @@ export class CategoriasController {
     @Body() createCategoryDto: CreateCategoryDto,
   ) {
     try {
-      return this.categoriasService.modifyCategory(
+      return this.categoriesService.modifyCategory(
         categoryId,
         createCategoryDto,
       );

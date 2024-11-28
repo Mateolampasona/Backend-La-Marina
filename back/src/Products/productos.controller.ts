@@ -18,6 +18,8 @@ import { UpdateProductDto } from './dto/UpdateProduct.dto';
 import { CreateProductDto } from './dto/createProduct.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService } from './cloudinary.service';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Product } from './entity/productos.entity';
 
 @Controller('products')
 export class ProductsController {
@@ -27,6 +29,13 @@ export class ProductsController {
   ) {}
 
   @Get()
+  @ApiOperation({ summary: 'Get all products' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return all products',
+    type: [Product],
+  })
+  @ApiResponse({ status: 400, description: 'Error message', type: String })
   @HttpCode(HttpStatus.OK)
   getProducts() {
     try {
@@ -37,6 +46,13 @@ export class ProductsController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get product by id' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return product by id',
+    type: Product,
+  })
+  @ApiResponse({ status: 400, description: 'Error message', type: String })
   @HttpCode(HttpStatus.OK)
   getProductById(@Param('id') id: number) {
     try {
@@ -47,6 +63,9 @@ export class ProductsController {
   }
 
   @Put(':id')
+  @ApiOperation({ summary: 'Modify product by id' })
+  @ApiResponse({ status: 200, description: 'Product modified', type: Product })
+  @ApiResponse({ status: 400, description: 'Error message', type: String })
   @HttpCode(HttpStatus.OK)
   modifyProduct(@Param('id') id: number, @Body() updateData: UpdateProductDto) {
     try {
@@ -57,6 +76,9 @@ export class ProductsController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete product by id' })
+  @ApiResponse({ status: 200, description: 'Product deleted', type: String })
+  @ApiResponse({ status: 400, description: 'Error message', type: String })
   @HttpCode(HttpStatus.OK)
   deleteProduct(@Param('id') id: number) {
     try {
@@ -67,25 +89,13 @@ export class ProductsController {
   }
 
   @Post('create')
-  @UseInterceptors(FileInterceptor('image'))
+  @ApiOperation({ summary: 'Create product' })
+  @ApiResponse({ status: 201, description: 'Product created', type: Product })
+  @ApiResponse({ status: 400, description: 'Error message', type: String })
   @HttpCode(HttpStatus.CREATED)
-  async createProduct(
-    @Body('data') body: CreateProductDto,
-    @UploadedFile() file: Express.Multer.File,
-  ) {
+  async createProduct(@Body() createProductDto: CreateProductDto) {
     try {
-      console.log(body);
-
-      const imageUrl = await this.cloudinaryService.uploadImage(file);
-
-      const product: CreateProductDto = {
-        ...body,
-        imageUrl,
-      };
-
-      const productCreated = await this.productService.createProduct(product);
-
-      return { message: 'Producto creado exitosamente', productCreated };
+      return await this.productService.createProduct(createProductDto);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

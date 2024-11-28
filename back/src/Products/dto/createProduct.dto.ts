@@ -1,78 +1,67 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsString,
-  IsNumber,
-  IsBoolean,
-  IsOptional,
-  IsPositive,
   IsNotEmpty,
+  IsNumber,
+  IsPositive,
+  IsBoolean,
 } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateProductDto {
   @ApiProperty({
-    description: 'Nombre del producto',
-    type: String,
-    example: 'Producto',
-    nullable: false,
+    example: 'Product name',
+    description: 'The name of the product',
   })
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   name: string;
 
   @ApiProperty({
-    description: 'Descripción del producto',
-    type: String,
-    example: 'Descripción del producto',
-    nullable: false,
+    example: 'Product description',
+    description: 'The description of the product',
   })
   @IsString()
-  @IsOptional()
   description: string;
 
   @ApiProperty({
-    description: 'Precio del producto',
-    type: Number,
-    nullable: false,
+    example: 100,
+    description: 'The price of the product',
   })
-  @IsNotEmpty()
   @IsNumber()
   @IsPositive()
+  @IsNotEmpty()
   price: number;
 
   @ApiProperty({
-    description: 'Stock del producto',
-    type: Number,
-    nullable: false,
+    example: 100,
+    description: 'The stock of the product',
   })
-  @IsNotEmpty()
   @IsNumber()
   @IsPositive()
+  @IsNotEmpty()
   stock: number;
 
   @ApiProperty({
-    description: 'Estado del producto',
-    type: Boolean,
-    nullable: false,
+    example: 1,
+    description: 'The category id of the product',
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  category_id: number;
+
+  @ApiProperty({
+    example: true,
+    description: 'The status of the product',
   })
   @IsBoolean()
-  @IsOptional()
+  @IsNotEmpty()
   isActive: boolean;
 
   @ApiProperty({
-    description: 'Imagen del producto',
-    type: String,
-    nullable: false,
+    example: 'https://www.image.com/image.jpg',
+    description: 'The image url of the product',
   })
   @IsString()
-  @IsOptional()
-  imageUrl: string;
-
-  @ApiProperty({
-    description: 'ID de la categoría',
-    type: Number,
-    nullable: false,
-  })
   @IsNotEmpty()
-  @IsNumber()
-  category_id: number;
+  imageUrl: string;
 }

@@ -7,14 +7,14 @@ import { create } from 'domain';
 import { CreateCategoryDto } from './dto/createCategory.dto';
 
 @Injectable()
-export class CategoriasService {
+export class CategoriesService {
   constructor(
     @InjectRepository(Category)
-    private readonly categoriaRepository: Repository<Category>,
+    private readonly categorieRepository: Repository<Category>,
   ) {}
 
   async getCategory(): Promise<Category[]> {
-    const categories = await this.categoriaRepository.find();
+    const categories = await this.categorieRepository.find();
     if (!categories) {
       throw new NotFoundException(
         'An error occurred while trying to get the categories',
@@ -24,7 +24,7 @@ export class CategoriasService {
   }
 
   async getCategoryById(categoryId: number): Promise<Category> {
-    const category = await this.categoriaRepository.findOne({
+    const category = await this.categorieRepository.findOne({
       where: { categoryId },
     });
     if (!category) {
@@ -36,7 +36,7 @@ export class CategoriasService {
   }
 
   async createCategory(createCategoryDto): Promise<Category> {
-    const category = await this.categoriaRepository.findOne({
+    const category = await this.categorieRepository.findOne({
       where: { name: createCategoryDto.name },
     });
     if (category) {
@@ -45,15 +45,15 @@ export class CategoriasService {
       );
     }
     const { name, description } = createCategoryDto;
-    const newCategory = this.categoriaRepository.create({ name, description });
+    const newCategory = this.categorieRepository.create({ name, description });
 
-    const savedCategory = await this.categoriaRepository.save(newCategory);
+    const savedCategory = await this.categorieRepository.save(newCategory);
 
     return savedCategory;
   }
 
   deleteCategory(categoryId: number): string {
-    const category = this.categoriaRepository.findOne({
+    const category = this.categorieRepository.findOne({
       where: { categoryId },
     });
     if (!category) {
@@ -61,12 +61,12 @@ export class CategoriasService {
         `An error occurred while trying to get the category with ID ${categoryId}`,
       );
     }
-    this.categoriaRepository.delete(categoryId);
+    this.categorieRepository.delete(categoryId);
     return `Category with ID ${categoryId} has been deleted`;
   }
 
   modifyCategory(categoryId: number, createCategoryDto: CreateCategoryDto) {
-    const category = this.categoriaRepository.findOne({
+    const category = this.categorieRepository.findOne({
       where: { categoryId },
     });
     if (!category) {
@@ -74,8 +74,8 @@ export class CategoriasService {
         `An error occurred while trying to get the category with ID ${categoryId}`,
       );
     }
-    this.categoriaRepository.update(categoryId, createCategoryDto);
-    const categoryUpdated = this.categoriaRepository.findOne({
+    this.categorieRepository.update(categoryId, createCategoryDto);
+    const categoryUpdated = this.categorieRepository.findOne({
       where: { categoryId },
     });
     return categoryUpdated;
