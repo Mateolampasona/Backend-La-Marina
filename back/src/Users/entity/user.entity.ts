@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Role } from 'src/Auth/enum/roles.enum';
 import { Order } from 'src/Orders/entity/order.entity';
 import {
   Column,
@@ -63,4 +64,7 @@ export class User {
     type: () => [Order],
   })
   orders: Order[];
+
+  @Column({ type: 'enum', enum: Role, default: 'user' })
+  role: Role;
 }

@@ -12,7 +12,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ name: 'productos' })
+@Entity({ name: 'products' })
 export class Product {
   @PrimaryGeneratedColumn({ name: 'product_id' })
   id: number;
@@ -52,7 +52,6 @@ export class Product {
 
   @ManyToOne(() => Category, (category) => category.products_id, {
     onDelete: 'CASCADE',
-    nullable: false,
   })
   @JoinColumn({ name: 'category_id' })
   category_id: Category;

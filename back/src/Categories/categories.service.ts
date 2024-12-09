@@ -65,8 +65,11 @@ export class CategoriesService {
     return `Category with ID ${categoryId} has been deleted`;
   }
 
-  modifyCategory(categoryId: number, createCategoryDto: CreateCategoryDto) {
-    const category = this.categorieRepository.findOne({
+  async modifyCategory(
+    categoryId: number,
+    createCategoryDto: CreateCategoryDto,
+  ) {
+    const category = await this.categorieRepository.findOne({
       where: { categoryId },
     });
     if (!category) {
@@ -74,8 +77,8 @@ export class CategoriesService {
         `An error occurred while trying to get the category with ID ${categoryId}`,
       );
     }
-    this.categorieRepository.update(categoryId, createCategoryDto);
-    const categoryUpdated = this.categorieRepository.findOne({
+    await this.categorieRepository.update(categoryId, createCategoryDto);
+    const categoryUpdated = await this.categorieRepository.findOne({
       where: { categoryId },
     });
     return categoryUpdated;

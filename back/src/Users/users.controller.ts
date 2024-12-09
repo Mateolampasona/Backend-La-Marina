@@ -51,7 +51,7 @@ export class UsersController {
   @ApiResponse({ status: 201, description: 'User created', type: User })
   @ApiResponse({ status: 400, description: 'Error message', type: String })
   @HttpCode(HttpStatus.CREATED)
-  async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
+  async createUser(@Body() createUserDto: CreateUserDto) {
     try {
       return await this.userService.createUser(createUserDto);
     } catch (error) {

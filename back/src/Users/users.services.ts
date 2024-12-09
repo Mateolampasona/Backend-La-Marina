@@ -28,18 +28,27 @@ export class UsersService {
     return user;
   }
 
-  async createUser(createUserDto: CreateUserDto): Promise<User> {
-    const password = createUserDto.password;
-    const confirmPassword = createUserDto.confirmPassword;
-    if (password !== confirmPassword) {
-      throw new BadRequestException('Passwords do not match');
+  async createUser(createUserDto: CreateUserDto): Promise<Partial<User>> {
+    const { email, name, password } = createUserDto;
+    const existingUser = await this.usersRepository.findOne({
+      where: { email: createUserDto.email },
+    });
+    if (existingUser) {
+      throw new BadRequestException('User already exists');
     }
-
-    const user = await this.usersRepository.create(createUserDto);
-    if (!user) {
-      throw new BadRequestException('User not created');
+    try {
+      const newUser = await this.usersRepository.create({
+        email,
+        name,
+        password,
+        // role,
+      });
+      const savedUser = await this.usersRepository.save(newUser);
+      const { password: _, ...result } = savedUser;
+      return result;
+    } catch (error) {
+      throw new BadRequestException('error creating user', error.message);
     }
-    return await this.usersRepository.save(createUserDto);
   }
 
   async deleteUser(id: number) {
@@ -57,9 +66,7 @@ export class UsersService {
     const user = await this.usersRepository.findOne({
       where: { email: email },
     });
-    if (!user) {
-      throw new BadRequestException(`User with email ${email} not found`);
-    }
+
     return user;
   }
 }

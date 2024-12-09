@@ -45,8 +45,6 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   signUp(@Body() createUserDto: CreateUserDto) {
     try {
-      console.log(createUserDto);
-
       return this.authService.signUp(createUserDto);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);

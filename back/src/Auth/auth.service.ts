@@ -11,12 +11,14 @@ import { CreateUserDto } from 'src/Users/dto/createUser.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/Users/entity/user.entity';
 import { Repository } from 'typeorm';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     private readonly userService: UsersService,
+    private readonly jwtService: JwtService,
   ) {}
 
   async signIn(credential: SignInAuthDto) {
@@ -26,23 +28,40 @@ export class AuthService {
         `User with email ${credential.email} not found`,
       );
     }
+
     const isPasswordValid = await bcrypt.compare(
       credential.password,
       dbUser.password,
     );
+
     if (!isPasswordValid) {
       throw new BadRequestException('Invalid password');
     }
-    return { success: 'Logged in' };
+
+    const payload = {
+      username: dbUser.email,
+      sub: dbUser.userId,
+      role: dbUser.role,
+    };
+    return {
+      accessToken: this.jwtService.sign(payload),
+    };
   }
 
   async signUp(createUserDto: CreateUserDto) {
-    const userExist = await this.userRepository.findOne({
-      where: { email: createUserDto.email },
-    });
-    if (userExist) {
+    if (createUserDto.password !== createUserDto.confirmPassword) {
+      throw new BadRequestException('Passwords do not match');
+    }
+    const dbUser = await this.userService.getUserByEmail(createUserDto.email);
+    if (dbUser) {
       throw new BadRequestException('User already exists');
     }
-    return await this.userService.createUser(createUserDto);
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    const newUser = {
+      ...createUserDto,
+      password: hashedPassword,
+    };
+    const createdUser = await this.userService.createUser(newUser);
+    return { success: 'User created', createdUser };
   }
 }
