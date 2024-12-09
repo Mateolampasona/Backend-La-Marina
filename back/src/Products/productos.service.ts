@@ -21,7 +21,6 @@ export class ProductService {
     private readonly categoryRepository: Repository<Category>,
   ) {}
 
-  // Servicios
   async getProducts(): Promise<Product[]> {
     const products = await this.productRepository.find({
       relations: ['category_id'],

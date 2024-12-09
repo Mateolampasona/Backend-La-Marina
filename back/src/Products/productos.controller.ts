@@ -8,6 +8,7 @@ import {
   HttpException,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Post,
   Put,
   UploadedFile,
@@ -96,6 +97,33 @@ export class ProductsController {
   async createProduct(@Body() createProductDto: CreateProductDto) {
     try {
       return await this.productService.createProduct(createProductDto);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Post(':id/upload-image')
+  @UseInterceptors(FileInterceptor('image'))
+  @ApiOperation({ summary: 'Upload image' })
+  @ApiResponse({ status: 201, description: 'Image uploaded', type: String })
+  @ApiResponse({ status: 400, description: 'Error message', type: String })
+  @HttpCode(HttpStatus.CREATED)
+  async uploadImage(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    try {
+      if (!file) {
+        throw new HttpException('Image not found', HttpStatus.BAD_REQUEST);
+      }
+      const imageUrl = await this.cloudinaryService.uploadImage(file);
+
+      const updatedData: UpdateProductDto = { imageUrl };
+      const updatedProduct = await this.productService.modifyProduct(
+        id,
+        updatedData,
+      );
+      return { message: 'Image uploaded', updatedProduct };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
