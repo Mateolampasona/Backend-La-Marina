@@ -9,11 +9,13 @@ import {
   HttpStatus,
   Param,
   Post,
+  Put,
 } from '@nestjs/common';
 import { UsersService } from './users.services';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from './entity/user.entity';
 import { CreateUserDto } from './dto/createUser.dto';
+import { ModifyUserDto } from './dto/modifyUser.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -33,6 +35,22 @@ export class UsersController {
     }
   }
 
+  @Put(':id')
+  @ApiOperation({ summary: 'Update user by id' })
+  @ApiResponse({ status: 200, description: 'User updated', type: User })
+  @ApiResponse({ status: 400, description: 'Error message', type: String })
+  @HttpCode(HttpStatus.OK)
+  async updateUser(
+    @Param('id') id: number,
+    @Body() modifyUserDto: ModifyUserDto,
+  ) {
+    try {
+      return await this.userService.updateUser(id, modifyUserDto);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get user by id' })
   @ApiResponse({ status: 200, description: 'Return user by id', type: User })
@@ -46,7 +64,7 @@ export class UsersController {
     }
   }
 
-  @Post()
+  @Post('create')
   @ApiOperation({ summary: 'Create user ' })
   @ApiResponse({ status: 201, description: 'User created', type: User })
   @ApiResponse({ status: 400, description: 'Error message', type: String })

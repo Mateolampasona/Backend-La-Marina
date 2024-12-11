@@ -40,7 +40,7 @@ export class ProductService {
     });
     if (!product) {
       throw new HttpException(
-        `Event with id ${id} not found`,
+        `Product with id ${id} not found`,
         HttpStatus.NOT_FOUND,
       );
     }

@@ -4,6 +4,8 @@ import { User } from './entity/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/createUser.dto';
+import { ModifyUserDto } from './dto/modifyUser.dto';
+import { create } from 'domain';
 
 @Injectable()
 export class UsersService {
@@ -29,7 +31,9 @@ export class UsersService {
   }
 
   async createUser(createUserDto: CreateUserDto): Promise<Partial<User>> {
-    const { email, name, password } = createUserDto;
+    console.log(createUserDto);
+
+    const { email, name, password, role } = createUserDto;
     const existingUser = await this.usersRepository.findOne({
       where: { email: createUserDto.email },
     });
@@ -41,7 +45,7 @@ export class UsersService {
         email,
         name,
         password,
-        // role,
+        role,
       });
       const savedUser = await this.usersRepository.save(newUser);
       const { password: _, ...result } = savedUser;
@@ -68,5 +72,26 @@ export class UsersService {
     });
 
     return user;
+  }
+
+  async updateUser(
+    id: number,
+    modifyUserDto: ModifyUserDto,
+  ): Promise<{ message: string; updatedUser: User }> {
+    const user = await this.usersRepository.findOne({
+      where: { userId: id },
+    });
+    if (!user) {
+      throw new BadRequestException(`User with id ${id} not found`);
+    }
+    try {
+      await this.usersRepository.update(id, modifyUserDto);
+      const updatedUser = await this.usersRepository.findOne({
+        where: { userId: id },
+      });
+      return { message: 'User updated successfully', updatedUser };
+    } catch (error) {
+      throw new BadRequestException('error updating user', error.message);
+    }
   }
 }
