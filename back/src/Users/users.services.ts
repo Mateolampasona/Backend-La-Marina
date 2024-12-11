@@ -38,7 +38,10 @@ export class UsersService {
       throw new BadRequestException('User already exists');
     }
     try {
-      const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+      let hashedPassword = '';
+      if (createUserDto.authProvider !== 'google') {
+        hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+      }
       const newUser = {
         ...createUserDto,
         password: hashedPassword,
