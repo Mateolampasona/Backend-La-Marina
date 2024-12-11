@@ -10,18 +10,31 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.services';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { User } from './entity/user.entity';
 import { CreateUserDto } from './dto/createUser.dto';
 import { ModifyUserDto } from './dto/modifyUser.dto';
+import { Role } from 'src/Auth/enum/roles.enum';
+import { Roles } from 'src/decorators/roles.decorator';
+import { AuthGuard } from '@nestjs/passport';
+import { RoleGuard } from 'src/Auth/roles.guard';
 
 @ApiTags('Users')
+@ApiBearerAuth()
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Get()
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Return all users', type: [User] })
@@ -35,6 +48,8 @@ export class UsersController {
     }
   }
 
+  @Roles(Role.Admin, Role.User, Role.Vip)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Put(':id')
   @ApiOperation({ summary: 'Update user by id' })
   @ApiResponse({ status: 200, description: 'User updated', type: User })
@@ -51,6 +66,8 @@ export class UsersController {
     }
   }
 
+  @Roles(Role.Admin, Role.User, Role.Vip)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Get(':id')
   @ApiOperation({ summary: 'Get user by id' })
   @ApiResponse({ status: 200, description: 'Return user by id', type: User })
@@ -77,6 +94,8 @@ export class UsersController {
     }
   }
 
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'Delete user by id' })
   @ApiResponse({ status: 200, description: 'User deleted', type: User })

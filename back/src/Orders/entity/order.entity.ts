@@ -14,14 +14,15 @@ import {
 
 @Entity({ name: 'orders' })
 export class Order {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
     description: 'Id de la orden',
-    example: 1,
+    example: '550e8400-e29b-41d4-a716-446655440000',
   })
-  id: number;
+  id: string;
 
   @ManyToOne(() => User, (user) => user.orders)
+  @JoinColumn({ name: 'user_id' })
   @ApiProperty({
     description: 'Usuario que realizó la orden',
     type: () => User,
@@ -29,7 +30,7 @@ export class Order {
   user: User;
 
   @OneToOne(() => OrderDetail, { cascade: true, onDelete: 'CASCADE' })
-  @JoinColumn()
+  @JoinColumn({ name: 'order_detail_id' })
   @ApiProperty({
     description: 'Detalle de la orden',
     type: () => OrderDetail,

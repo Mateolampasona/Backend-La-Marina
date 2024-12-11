@@ -52,16 +52,18 @@ export class CategoriesService {
     return savedCategory;
   }
 
-  deleteCategory(categoryId: number): string {
-    const category = this.categorieRepository.findOne({
+  async deleteCategory(categoryId: number) {
+    const category = await this.categorieRepository.findOne({
       where: { categoryId },
     });
+    console.log(category);
+
     if (!category) {
       throw new NotFoundException(
         `An error occurred while trying to get the category with ID ${categoryId}`,
       );
     }
-    this.categorieRepository.delete(categoryId);
+    await this.categorieRepository.delete(categoryId);
     return `Category with ID ${categoryId} has been deleted`;
   }
 
