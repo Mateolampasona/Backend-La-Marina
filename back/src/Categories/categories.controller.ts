@@ -10,9 +10,14 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/createCategory.dto';
+import { Roles } from 'src/decorators/roles.decorator';
+import { Role } from 'src/Auth/enum/roles.enum';
+import { AuthGuard } from '@nestjs/passport';
+import { RoleGuard } from 'src/Auth/roles.guard';
 
 @Controller('categories')
 export class CategoriesController {
@@ -38,6 +43,8 @@ export class CategoriesController {
     }
   }
 
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Post('create')
   createCategory(@Body() createCategoryDto: CreateCategoryDto) {
     try {
@@ -47,6 +54,8 @@ export class CategoriesController {
     }
   }
 
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Delete(':id')
   deleteCategory(@Param('id') categoryId: number) {
     try {
@@ -56,6 +65,8 @@ export class CategoriesController {
     }
   }
 
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Put(':id')
   ModifyCategory(
     @Param('id') categoryId: number,

@@ -12,6 +12,7 @@ import {
   Post,
   Put,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ProductService } from './productos.service';
@@ -21,6 +22,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService } from './cloudinary.service';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Product } from './entity/productos.entity';
+import { Roles } from 'src/decorators/roles.decorator';
+import { Role } from 'src/Auth/enum/roles.enum';
+import { AuthGuard } from '@nestjs/passport';
+import { RoleGuard } from 'src/Auth/roles.guard';
 
 @Controller('products')
 export class ProductsController {
@@ -63,6 +68,8 @@ export class ProductsController {
     }
   }
 
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Put(':id')
   @ApiOperation({ summary: 'Modify product by id' })
   @ApiResponse({ status: 200, description: 'Product modified', type: Product })
@@ -76,6 +83,8 @@ export class ProductsController {
     }
   }
 
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'Delete product by id' })
   @ApiResponse({ status: 200, description: 'Product deleted', type: String })
@@ -89,6 +98,8 @@ export class ProductsController {
     }
   }
 
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Post('create')
   @ApiOperation({ summary: 'Create product' })
   @ApiResponse({ status: 201, description: 'Product created', type: Product })
@@ -102,6 +113,8 @@ export class ProductsController {
     }
   }
 
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Post(':id/upload-image')
   @UseInterceptors(FileInterceptor('image'))
   @ApiOperation({ summary: 'Upload image' })
