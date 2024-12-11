@@ -5,13 +5,17 @@ import {
   HttpCode,
   HttpException,
   HttpStatus,
+  Param,
   Post,
+  Put,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInAuthDto } from './dto/signIn.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CreateUserDto } from 'src/Users/dto/createUser.dto';
 import { User } from 'src/Users/entity/user.entity';
+import { ChangePasswordDto } from './dto/changePassword.dto';
+import { AssignPasswordDto } from './dto/assignPassword.dto';
 
 @Controller('Auth')
 export class AuthController {
@@ -46,6 +50,42 @@ export class AuthController {
   signUp(@Body() createUserDto: CreateUserDto) {
     try {
       return this.authService.signUp(createUserDto);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Put('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(@Body() email: string) {
+    try {
+      return this.authService.forgotPassword(email);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Put(':id/assign-password')
+  @HttpCode(HttpStatus.OK)
+  async assignPassword(
+    @Body() password: AssignPasswordDto,
+    @Param('id') id: number,
+  ) {
+    try {
+      return this.authService.assignPassword(password, id);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Put(':id/change-password')
+  @HttpCode(HttpStatus.OK)
+  async changePassword(
+    @Body() passwords: ChangePasswordDto,
+    @Param('id') id: number,
+  ) {
+    try {
+      return this.authService.changePassword(passwords, id);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

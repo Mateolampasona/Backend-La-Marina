@@ -91,4 +91,22 @@ export class UsersService {
       throw new BadRequestException('error updating user', error.message);
     }
   }
+
+  async updatePassword(userId: number, hashedPassword: string) {
+    const user = await this.usersRepository.findOne({
+      where: { userId: userId },
+    });
+    if (!user) {
+      throw new BadRequestException(`User with id ${userId} not found`);
+    }
+    try {
+      await this.usersRepository.update(userId, { password: hashedPassword });
+      const updatedUser = await this.usersRepository.findOne({
+        where: { userId: userId },
+      });
+      return { message: 'Password updated successfully', updatedUser };
+    } catch (error) {
+      throw new BadRequestException('error updating password', error.message);
+    }
+  }
 }
