@@ -12,7 +12,6 @@ import { OrderService } from './ordenes.service';
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  // Rutas
   @Get()
   @HttpCode(HttpStatus.OK)
   async getOrders() {

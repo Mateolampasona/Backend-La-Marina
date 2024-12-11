@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from './entity/order.entity';
 import { Repository } from 'typeorm';
@@ -11,7 +11,11 @@ export class OrderService {
     private readonly orderRepository: Repository<Order>,
   ) {}
 
-  getOrders() {
-    return 'Esta ruta retorna todas las ordenes';
+  async getOrders() {
+    const orders = await this.orderRepository.find();
+    if (!orders) {
+      throw new HttpException('No orders found', HttpStatus.NOT_FOUND);
+    }
+    return orders;
   }
 }
