@@ -6,7 +6,11 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/createUser.dto';
 import { ModifyUserDto } from './dto/modifyUser.dto';
 import * as bcrypt from 'bcrypt';
-
+import { BanUserDto } from './dto/banUser.dto';
+import {
+  sendBanNotificationEmail,
+  sendUnbanNotificationEmail,
+} from 'src/Config/nodeMailer';
 @Injectable()
 export class UsersService {
   constructor() {}
@@ -62,8 +66,12 @@ export class UsersService {
     if (!user) {
       throw new BadRequestException(`User with id ${id} not found`);
     }
-    await this.usersRepository.delete(id);
-    return { message: `User with id ${id} deleted` };
+    try {
+      await this.usersRepository.delete(id);
+      return { message: `User with id ${id} deleted` };
+    } catch (error) {
+      throw new BadRequestException('error deleting user', error.message);
+    }
   }
 
   async getUserByEmail(email: string): Promise<User> {
@@ -95,7 +103,10 @@ export class UsersService {
     }
   }
 
-  async updatePassword(userId: number, hashedPassword: string) {
+  async updatePassword(
+    userId: number,
+    hashedPassword: string,
+  ): Promise<{ message: string; updatedUser: User }> {
     const user = await this.usersRepository.findOne({
       where: { userId: userId },
     });
@@ -110,6 +121,64 @@ export class UsersService {
       return { message: 'Password updated successfully', updatedUser };
     } catch (error) {
       throw new BadRequestException('error updating password', error.message);
+    }
+  }
+
+  async banUser(
+    id: number,
+    data: BanUserDto,
+  ): Promise<{ message: string; bannedUser: User }> {
+    const user = await this.usersRepository.findOne({
+      where: { userId: id },
+    });
+    if (!user) {
+      throw new BadRequestException(`User with id ${id} not found`);
+    }
+    if (user.isBanned === true) {
+      throw new BadRequestException(`User with id ${id} is already banned`);
+    }
+    try {
+      await this.usersRepository.update(id, { isBanned: true });
+      const bannedUser = await this.usersRepository.findOne({
+        where: { userId: id },
+      });
+      await sendBanNotificationEmail(
+        bannedUser.email,
+        bannedUser.name,
+        data.banreason,
+      );
+
+      return {
+        message: `User banned sucessfuly, motive: ${data.banreason}`,
+        bannedUser,
+      };
+    } catch (error) {
+      throw new BadRequestException('error banning user', error.message);
+    }
+  }
+
+  async unbanUser(
+    id: number,
+  ): Promise<{ message: string; unbannedUser: User }> {
+    const user = await this.usersRepository.findOne({ where: { userId: id } });
+    if (!user) {
+      throw new BadRequestException(`User with id ${id} not found`);
+    }
+    if (user.isBanned === false) {
+      throw new BadRequestException(`User with id ${id} is not banned`);
+    }
+    try {
+      await this.usersRepository.update(id, { isBanned: false });
+      const unbannedUser = await this.usersRepository.findOne({
+        where: { userId: id },
+      });
+      await sendUnbanNotificationEmail(unbannedUser.email, unbannedUser.name);
+      return {
+        message: `User with id ${id} unbanned successfully`,
+        unbannedUser,
+      };
+    } catch (error) {
+      throw new BadRequestException('error unbanning user', error.message);
     }
   }
 }

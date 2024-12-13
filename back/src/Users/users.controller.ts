@@ -26,6 +26,7 @@ import { Role } from 'src/Auth/enum/roles.enum';
 import { Roles } from 'src/decorators/roles.decorator';
 import { AuthGuard } from '@nestjs/passport';
 import { RoleGuard } from 'src/Auth/roles.guard';
+import { BanUserDto } from './dto/banUser.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -66,21 +67,6 @@ export class UsersController {
     }
   }
 
-  @Roles(Role.Admin, Role.User, Role.Vip)
-  @UseGuards(AuthGuard('jwt'), RoleGuard)
-  @Get(':id')
-  @ApiOperation({ summary: 'Get user by id' })
-  @ApiResponse({ status: 200, description: 'Return user by id', type: User })
-  @ApiResponse({ status: 400, description: 'Error message', type: String })
-  @HttpCode(HttpStatus.OK)
-  async getUserById(@Param('id') id: number): Promise<User> {
-    try {
-      return await this.userService.getUserById(id);
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
-  }
-
   @Post('create')
   @ApiOperation({ summary: 'Create user ' })
   @ApiResponse({ status: 201, description: 'User created', type: User })
@@ -104,6 +90,51 @@ export class UsersController {
   async deleteUser(@Param('id') id: number): Promise<{ message: string }> {
     try {
       return await this.userService.deleteUser(id);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Put(':id/ban')
+  @ApiOperation({ summary: 'Ban user by id' })
+  @ApiResponse({ status: 200, description: 'User banned', type: User })
+  @ApiResponse({ status: 400, description: 'Error message', type: String })
+  @HttpCode(HttpStatus.OK)
+  async banUser(@Param('id') id: number, @Body() data: BanUserDto) {
+    try {
+      return await this.userService.banUser(id, data);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Put(':id/unban')
+  @ApiOperation({ summary: 'Unban user by id' })
+  @ApiResponse({ status: 200, description: 'User Unbanned', type: User })
+  @ApiResponse({ status: 400, description: 'Error message', type: String })
+  @HttpCode(HttpStatus.OK)
+  async unbanUser(@Param('id') id: number) {
+    try {
+      return await this.userService.unbanUser(id);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Roles(Role.Admin, Role.User, Role.Vip)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Get(':id')
+  @ApiOperation({ summary: 'Get user by id' })
+  @ApiResponse({ status: 200, description: 'Return user by id', type: User })
+  @ApiResponse({ status: 400, description: 'Error message', type: String })
+  @HttpCode(HttpStatus.OK)
+  async getUserById(@Param('id') id: number): Promise<User> {
+    try {
+      return await this.userService.getUserById(id);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
