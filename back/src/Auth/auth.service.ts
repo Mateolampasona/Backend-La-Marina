@@ -27,6 +27,29 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  generatePassword(): string {
+    const lowerCase = 'abcdefghijklmnopqrstuvwxyz';
+    const upperCase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const numbers = '0123456789';
+    const specialChars = '!@#$%^&*()_+[]{}|;:,.<>?';
+
+    const allChars = lowerCase + upperCase + numbers + specialChars;
+
+    let password = '';
+    password += lowerCase[Math.floor(Math.random() * lowerCase.length)];
+    password += upperCase[Math.floor(Math.random() * upperCase.length)];
+    password += numbers[Math.floor(Math.random() * numbers.length)];
+    password += specialChars[Math.floor(Math.random() * specialChars.length)];
+
+    for (let i = 4; i < 12; i++) {
+      password += allChars[Math.floor(Math.random() * allChars.length)];
+    }
+
+    return password
+      .split('')
+      .sort(() => 0.5 - Math.random())
+      .join('');
+  }
   async signIn(credential: SignInAuthDto) {
     const dbUser = await this.userService.getUserByEmail(credential.email);
     if (!dbUser) {
@@ -63,12 +86,15 @@ export class AuthService {
     if (dbUser) {
       throw new BadRequestException('User already exists');
     }
+
+    const createdUser = await this.userService.createUser(createUserDto);
+    console.log('Usuario creado', createdUser);
+
     try {
       await sendWelcomeEmail(createUserDto.email, createUserDto.name);
     } catch (error) {
       console.log(error);
     }
-    const createdUser = await this.userService.createUser(createUserDto);
     return { success: 'User created', createdUser };
   }
 
@@ -98,7 +124,7 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException(`User with email ${email} not found`);
     }
-    const newPassword = Math.random().toString(36).slice(-8);
+    const newPassword = this.generatePassword();
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await this.userService.updatePassword(user.userId, hashedPassword);
     try {
@@ -106,6 +132,7 @@ export class AuthService {
       await sendPasswordResetEmail(email, name, newPassword);
     } catch (error) {
       console.log(error);
+      throw new BadRequestException('Failed to send email');
     }
     return { success: 'New password sent to your email' };
   }
@@ -120,5 +147,25 @@ export class AuthService {
     }
     const hashedPassword = await bcrypt.hash(password.password, 10);
     return await this.userService.updatePassword(user.userId, hashedPassword);
+  }
+
+  async validateGoogleUser(googleUser: CreateUserDto) {
+    const user = await this.userService.getUserByEmail(googleUser.email);
+    if (user) {
+      return user;
+    }
+    googleUser.authProvider = 'google';
+    return await this.userService.createUser(googleUser);
+  }
+
+  async signInOauth(user: User) {
+    const payload = {
+      username: user.email,
+      sub: user.userId,
+      role: user.role,
+    };
+    return {
+      accessToken: this.jwtService.sign(payload),
+    };
   }
 }

@@ -58,4 +58,8 @@ export class CreateUserDto {
   @IsEnum(Role)
   @IsOptional()
   role?: Role;
+
+  @ApiHideProperty()
+  @IsOptional()
+  authProvider?: string;
 }

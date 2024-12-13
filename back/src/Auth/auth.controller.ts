@@ -2,12 +2,16 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpException,
   HttpStatus,
   Param,
   Post,
   Put,
+  Req,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInAuthDto } from './dto/signIn.dto';
@@ -16,6 +20,8 @@ import { CreateUserDto } from 'src/Users/dto/createUser.dto';
 import { User } from 'src/Users/entity/user.entity';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import { AssignPasswordDto } from './dto/assignPassword.dto';
+import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
+import { Public } from 'src/decorators/public.decorator';
 
 @Controller('Auth')
 export class AuthController {
@@ -89,5 +95,18 @@ export class AuthController {
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
+  }
+
+  @Public()
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/login')
+  googleLogin() {}
+
+  @Public()
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/callback')
+  async googleCallback(@Req() req, @Res() res) {
+    const response = await this.authService.signInOauth(req.user);
+    res.redirect('http://localhost:3001/login?token=' + response.accessToken);
   }
 }
