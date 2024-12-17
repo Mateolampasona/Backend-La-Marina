@@ -23,7 +23,7 @@ export class PaymentService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    const order = await this.orderService.getOrderById(orderId);
+    const order = await this.orderService.getOrderById(user.userId);
     if (!order) {
       throw new NotFoundException('Order not found');
     }

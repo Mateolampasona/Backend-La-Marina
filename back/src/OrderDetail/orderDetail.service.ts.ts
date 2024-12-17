@@ -63,7 +63,7 @@ export class OrderDetailsService {
 
     if (existingOrderDetail) {
       // Update the quantity of the existing order detail
-      existingOrderDetail.quantity = orderDetail.quantity;
+      existingOrderDetail.quantity += orderDetail.quantity;
       await this.orderDetailRepository.save(existingOrderDetail);
     } else {
       // Create a new order detail
@@ -80,6 +80,11 @@ export class OrderDetailsService {
       where: { id: order.id },
       relations: ['orderDetails', 'orderDetails.product'],
     });
+
+    // Calculate the total order amount
+    const totalOrder = await this.calculateTotal(order.id);
+    order.totalOrder = totalOrder;
+    await this.orderRepository.save(order);
 
     return order;
   }

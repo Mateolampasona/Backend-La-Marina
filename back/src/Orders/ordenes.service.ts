@@ -26,9 +26,14 @@ export class OrderService {
     return orders;
   }
 
-  async getOrderById(id: string) {
+  async getOrderById(userId: number) {
+    const user = await this.userService.getUserById(userId);
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    const orderId = user.order.id;
     const order = await this.orderRepository.findOne({
-      where: { id: id },
+      where: { id: orderId },
       relations: ['orderDetails', 'orderDetails.product', 'user'],
     });
     if (!order) {

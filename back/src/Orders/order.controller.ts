@@ -49,11 +49,13 @@ export class OrderController {
 
   @Roles(Role.Admin, Role.User)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
-  @Get('/:id')
+  @Get('/get-order')
   @HttpCode(HttpStatus.OK)
-  async getOrderById(@Param('id') id: string) {
+  async getOrderById(@Req() req: any) {
+    const userId = req.user.userId;
+
     try {
-      return await this.orderService.getOrderById(id);
+      return await this.orderService.getOrderById(userId);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
