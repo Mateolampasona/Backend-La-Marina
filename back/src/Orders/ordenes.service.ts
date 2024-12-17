@@ -27,7 +27,7 @@ export class OrderService {
   }
 
   async getOrderById(id: string) {
-    const order = await this.orderRepository.findOne({ where: { id: id }, relations: ['orderDetails', 'orderDetails.product'] });
+    const order = await this.orderRepository.findOne({ where: { id: id }, relations: ['orderDetails', 'orderDetails.product', 'user'] });
     if (!order) {
       throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
     }

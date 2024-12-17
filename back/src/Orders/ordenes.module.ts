@@ -11,5 +11,6 @@ import { UsersModule } from 'src/Users/users.module';
   imports: [TypeOrmModule.forFeature([Order, OrderDetail]), UsersModule],
   providers: [OrderService],
   controllers: [OrderController],
+  exports: [OrderService], 
 })
 export class OrderModule {}
