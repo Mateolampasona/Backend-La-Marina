@@ -7,6 +7,7 @@ import {
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
+  OneToOne,
 } from 'typeorm';
 
 @Entity({ name: 'users' })
@@ -58,12 +59,12 @@ export class User {
   })
   createdAt: Date;
 
-  @OneToMany(() => Order, (order) => order.user)
+  @OneToOne(() => Order, (order) => order.user)
   @ApiProperty({
-    description: 'Órdenes del usuario',
-    type: () => [Order],
+    description: 'Orden del usuario',
+    type: () => Order,
   })
-  orders: Order[];
+  order: Order;
 
   @Column({ type: 'enum', enum: Role, default: 'user' })
   role: Role;

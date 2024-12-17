@@ -9,13 +9,21 @@ import {
   HttpStatus,
   Param,
   Post,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { OrderService } from './ordenes.service';
+import { Roles } from 'src/decorators/roles.decorator';
+import { Role } from 'src/Auth/enum/roles.enum';
+import { AuthGuard } from '@nestjs/passport';
+import { RoleGuard } from 'src/Auth/roles.guard';
 
 @Controller('Orders')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
   async getOrders() {
@@ -25,46 +33,43 @@ export class OrderController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
-  @Post(':userId/create-order')
-  @HttpCode(HttpStatus.CREATED)
-  async createOrder(@Param('userId') userId: number) {
-    try {
-      console.log('hol');
 
-      return await this.orderService.createOrder(userId);
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
-  }
+  // @Roles(Role.Admin, Role.Guest, Role.User)
+  // @UseGuards(AuthGuard('jwt'), RoleGuard)
+  // @Post('create-order')
+  // @HttpCode(HttpStatus.CREATED)
+  // async createOrder(@Req() req: any) {
+  //   const userId = req.user.userId;
+  //   try {
+  //     return await this.orderService.createOrder(userId);
+  //   } catch (error) {
+  //     throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+  //   }
+  // }
 
-  @Post(':orderId/addProduct')
-  @HttpCode(HttpStatus.CREATED)
-  async addOrderDetail(
-    @Param('orderId') orderId: string,
-    @Body() orderDetail: any,
-  ) {
-    try {
-      return await this.orderService.addProduct(orderId, orderDetail);
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  @Get('/:id')
+  @Roles(Role.Admin, Role.User)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Get('/get-order')
   @HttpCode(HttpStatus.OK)
-  async getOrderById(@Param('id') id: string) {
+  async getOrderById(@Req() req: any) {
+    const userId = req.user.userId;
+
     try {
-      return await this.orderService.getOrderById(id);
+      return await this.orderService.getOrderById(userId);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
 
+  @Roles(Role.Admin, Role.Guest, Role.User)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Delete('delete/:id')
   @HttpCode(HttpStatus.OK)
-  async deleteOrder(@Param('id') id: string) {
+  async deleteOrder(@Param('id') id: string, @Req() req: any) {
+    const userId = req.user.userId;
+
     try {
-      return await this.orderService.deleteOrder(id);
+      return await this.orderService.deleteOrder(id, userId);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

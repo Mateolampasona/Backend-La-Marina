@@ -6,6 +6,7 @@ import { AddProductDto } from './dto/addProduct.dto';
 import { ProductService } from '../Products/productos.service';
 import { OrderDetail } from './entity/orderDetail.entity';
 import { log } from 'node:console';
+import { UsersService } from 'src/Users/users.services';
 
 @Injectable()
 export class OrderDetailsService {
@@ -15,70 +16,92 @@ export class OrderDetailsService {
     @InjectRepository(OrderDetail)
     private readonly orderDetailRepository: Repository<OrderDetail>,
     private readonly productService: ProductService,
+    private readonly userService: UsersService,
   ) {}
 
-  async addProduct(orderId: string, orderDetail: AddProductDto) {
-    const order = await this.orderRepository.findOne({ where: { id: orderId }, relations: ['orderDetails', 'orderDetails.product'] });
-    if (!order) {
-      throw new BadRequestException('Order not found');
+  async addProduct(orderDetail: AddProductDto, userId: number) {
+    const user = await this.userService.getUserById(userId);
+    if (!user) {
+      throw new BadRequestException('User not found');
     }
-    const product = await this.productService.getProductById(orderDetail.productId);
+
+    let order;
+    if (user.order === null) {
+      // En caso de que el usuario no tenga una orden crearemos una
+      const orderCreated = this.orderRepository.create({
+        user: user,
+      });
+      await this.orderRepository.save(orderCreated);
+
+      order = await this.orderRepository.findOne({
+        where: { id: orderCreated.id },
+        relations: ['orderDetails', 'orderDetails.product'],
+      });
+    } else {
+      const orderId = user.order.id;
+
+      order = await this.orderRepository.findOne({
+        where: { id: orderId },
+        relations: ['orderDetails', 'orderDetails.product'],
+      });
+      if (!order) {
+        throw new BadRequestException('Order not found');
+      }
+    }
+
+    const product = await this.productService.getProductById(
+      orderDetail.productId,
+    );
     if (!product) {
       throw new BadRequestException('Product not found');
     }
-    if(product.stock < orderDetail.quantity){
-      throw new BadRequestException('Stock not available');
-    }
 
-    let detail = order.orderDetails.find(detail => detail.product.id === product.id);
+    // Check if the product already exists in the order
+    const existingOrderDetail = order.orderDetails.find(
+      (detail) => detail.product.id === orderDetail.productId,
+    );
 
-    if (detail) {
-      detail.quantity = orderDetail.quantity;
-      await this.orderDetailRepository.save(detail);
+    if (existingOrderDetail) {
+      // Update the quantity of the existing order detail
+      existingOrderDetail.quantity += orderDetail.quantity;
+      await this.orderDetailRepository.save(existingOrderDetail);
     } else {
-      detail = this.orderDetailRepository.create({
-        product: product,
+      // Create a new order detail
+      const orderDetailCreated = this.orderDetailRepository.create({
         order: order,
+        product: product,
         quantity: orderDetail.quantity,
       });
-      await this.orderDetailRepository.save(detail);
+      await this.orderDetailRepository.save(orderDetailCreated);
     }
 
-    
-    const totalOrder = await this.calculateTotal(orderId);
-    const calculate = await this.orderRepository.update(orderId, { totalOrder: totalOrder });
-    const orderUpdated = await this.orderRepository.findOne({ where: { id: orderId }, relations: ['orderDetails', 'orderDetails.product'] });
-    const transformedOrderDetails = await orderUpdated.orderDetails.map(detail => ({
-      id: detail.id,
-      quantity: detail.quantity,
-      // total: totalOrder,
-      product: {
-        id: detail.product.id,
-        name: detail.product.name,
-        price: detail.product.price,
-        stock: detail.product.stock,
-      }
-    }));
+    // Refetch the order with the updated order details
+    order = await this.orderRepository.findOne({
+      where: { id: order.id },
+      relations: ['orderDetails', 'orderDetails.product'],
+    });
 
-    return {
-      ...orderUpdated,
-      orderDetails: transformedOrderDetails,
-    };
+    // Calculate the total order amount
+    const totalOrder = await this.calculateTotal(order.id);
+    order.totalOrder = totalOrder;
+    await this.orderRepository.save(order);
+
+    return order;
   }
 
   async calculateTotal(orderId: string) {
-    const order = await this.orderRepository.findOne({ where: { id: orderId }, relations: ['orderDetails', 'orderDetails.product'] });
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: ['orderDetails', 'orderDetails.product'],
+    });
     if (!order) {
       throw new BadRequestException('Order not found');
     }
 
     const total = order.orderDetails.reduce((acc, detail) => {
-      return acc + (detail.product.price * detail.quantity);
+      return acc + detail.product.price * detail.quantity;
     }, 0);
 
     return total;
-    
   }
-
-
 }

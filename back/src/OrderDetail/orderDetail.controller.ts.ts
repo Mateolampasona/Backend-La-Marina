@@ -7,22 +7,29 @@ import {
   HttpStatus,
   Param,
   Post,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { OrderDetailsService } from './orderDetail.service.ts';
 import { AddProductDto } from './dto/addProduct.dto.js';
+
+import { Roles } from 'src/decorators/roles.decorator';
+import { Role } from 'src/Auth/enum/roles.enum';
+import { RoleGuard } from 'src/Auth/roles.guard';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('orderDetails')
 export class OrderDetailsController {
   constructor(private readonly orderDetailsService: OrderDetailsService) {}
 
-  @Post(':orderId/addProduct')
+  @Roles(Role.Admin, Role.Guest, Role.User)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Post('/addProduct')
   @HttpCode(HttpStatus.CREATED)
-  async addOrderDetail(
-    @Param('orderId') orderId: string,
-    @Body() orderDetail: AddProductDto,
-  ) {
+  async addOrderDetail(@Body() orderDetail: AddProductDto, @Req() req: any) {
+    const userId = req.user.userId;
     try {
-      return await this.orderDetailsService.addProduct(orderId, orderDetail);
+      return await this.orderDetailsService.addProduct(orderDetail, userId);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

@@ -7,6 +7,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  OneToOne,
 } from 'typeorm';
 import { OrderDetail } from '../../OrderDetail/entity/orderDetail.entity';
 
@@ -15,7 +16,7 @@ export class Order {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => User, (user) => user.orders)
+  @OneToOne(() => User, (user) => user.order)
   @JoinColumn({ name: 'user_id' })
   user: User;
 
