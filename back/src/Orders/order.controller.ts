@@ -11,7 +11,6 @@ import {
   Post,
 } from '@nestjs/common';
 import { OrderService } from './ordenes.service';
-import { CreateOrderDto } from './dto/createOrder.dto';
 
 @Controller('Orders')
 export class OrderController {
@@ -22,6 +21,30 @@ export class OrderController {
   async getOrders() {
     try {
       return await this.orderService.getOrders();
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+  @Post(':userId/create-order')
+  @HttpCode(HttpStatus.CREATED)
+  async createOrder(@Param('userId') userId: number) {
+    try {
+      console.log('hol');
+
+      return await this.orderService.createOrder(userId);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Post(':orderId/addProduct')
+  @HttpCode(HttpStatus.CREATED)
+  async addOrderDetail(
+    @Param('orderId') orderId: string,
+    @Body() orderDetail: any,
+  ) {
+    try {
+      return await this.orderService.addProduct(orderId, orderDetail);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -42,16 +65,6 @@ export class OrderController {
   async deleteOrder(@Param('id') id: string) {
     try {
       return await this.orderService.deleteOrder(id);
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  @Post('create')
-  @HttpCode(HttpStatus.CREATED)
-  async createOrder(@Body() order: CreateOrderDto) {
-    try {
-      return await this.orderService.createOrder(order);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
