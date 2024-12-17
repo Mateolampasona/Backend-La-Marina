@@ -12,5 +12,6 @@ import { CloudinaryService } from './cloudinary.service';
   imports: [TypeOrmModule.forFeature([Product, Category])],
   controllers: [ProductsController],
   providers: [ProductService, CloudinaryConfig, CloudinaryService],
+  exports: [ProductService], // Export ProductService here
 })
 export class ProductsModule {}
