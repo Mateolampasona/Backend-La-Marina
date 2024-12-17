@@ -23,22 +23,44 @@ export class OrderService {
     if (!orders) {
       throw new HttpException('No orders found', HttpStatus.NOT_FOUND);
     }
-    return orders
+    return orders;
   }
 
   async getOrderById(id: string) {
-    const order = await this.orderRepository.findOne({ where: { id: id }, relations: ['orderDetails', 'orderDetails.product', 'user'] });
+    const order = await this.orderRepository.findOne({
+      where: { id: id },
+      relations: ['orderDetails', 'orderDetails.product', 'user'],
+    });
     if (!order) {
       throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
     }
-    return order  
+    return order;
   }
 
-  async deleteOrder(id: string) {
-    const order = await this.orderRepository.findOne({ where: { id } });
+  async deleteOrder(id: string, userId: number) {
+    const order = await this.orderRepository.findOne({
+      where: { id },
+      relations: ['user'],
+    });
     if (!order) {
       throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
     }
+
+    const user = await this.userService.getUserById(userId);
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (user.role !== 'admin') {
+      if (order.user.userId != user.userId) {
+        throw new HttpException(
+          'You are not allowed to delete this order',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+    }
+
+    await this.orderDetailRepository.delete({ order: order });
     await this.orderRepository.delete(id);
     return { message: `Order with ID ${id} sucesfully deleted` };
   }
