@@ -65,37 +65,24 @@ export class OrderService {
     return { message: `Order with ID ${id} sucesfully deleted` };
   }
 
-  async createOrder(userId: number) {
-    const user = await this.userService.getUserById(userId);
-    if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
-    const newOrder = await this.orderRepository.create({ user });
-    await this.orderRepository.save(newOrder);
-    return {
-      id: newOrder.id,
-      total: newOrder.totalOrder,
-      status: newOrder.status,
-      createdAt: newOrder.createdAt,
-      user: {
-        id: user.userId,
-        email: user.email,
-        name: user.name,
-      },
-      orderdetails: [],
-    };
-  }
-
-  async addProduct(orderId: string, orderDetail: any) {
-    const order = await this.orderRepository.findOne({
-      where: { id: orderId },
-    });
-    if (!order) {
-      throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
-    }
-    orderDetail.order = order;
-    const newOrderDetail = await this.orderDetailRepository.create(orderDetail);
-    await this.orderDetailRepository.save(newOrderDetail);
-    return newOrderDetail;
-  }
+  // async createOrder(userId: number) {
+  //   const user = await this.userService.getUserById(userId);
+  //   if (!user) {
+  //     throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+  //   }
+  //   const newOrder = await this.orderRepository.create({ user });
+  //   await this.orderRepository.save(newOrder);
+  //   return {
+  //     id: newOrder.id,
+  //     total: newOrder.totalOrder,
+  //     status: newOrder.status,
+  //     createdAt: newOrder.createdAt,
+  //     user: {
+  //       id: user.userId,
+  //       email: user.email,
+  //       name: user.name,
+  //     },
+  //     orderdetails: [],
+  //   };
+  // }
 }

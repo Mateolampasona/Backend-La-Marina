@@ -34,36 +34,20 @@ export class OrderController {
     }
   }
 
-  @Roles(Role.Admin, Role.Guest, Role.User)
-  @UseGuards(AuthGuard('jwt'), RoleGuard)
-  @Post(':userId/create-order')
-  @HttpCode(HttpStatus.CREATED)
-  async createOrder(@Param('userId') userId: number) {
-    try {
-      console.log('hol');
+  // @Roles(Role.Admin, Role.Guest, Role.User)
+  // @UseGuards(AuthGuard('jwt'), RoleGuard)
+  // @Post('create-order')
+  // @HttpCode(HttpStatus.CREATED)
+  // async createOrder(@Req() req: any) {
+  //   const userId = req.user.userId;
+  //   try {
+  //     return await this.orderService.createOrder(userId);
+  //   } catch (error) {
+  //     throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+  //   }
+  // }
 
-      return await this.orderService.createOrder(userId);
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  @Roles(Role.Admin, Role.Guest, Role.User)
-  @UseGuards(AuthGuard('jwt'), RoleGuard)
-  @Post(':orderId/addProduct')
-  @HttpCode(HttpStatus.CREATED)
-  async addOrderDetail(
-    @Param('orderId') orderId: string,
-    @Body() orderDetail: any,
-  ) {
-    try {
-      return await this.orderService.addProduct(orderId, orderDetail);
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  @Roles(Role.Admin, Role.Guest, Role.User)
+  @Roles(Role.Admin, Role.User)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
