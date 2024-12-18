@@ -103,4 +103,40 @@ export class ProductService {
     });
     return productWithCategory;
   }
+
+  async addDiscount(productId: number, discount: number) {
+    const product = await this.productRepository.findOne({
+      where: { id: productId },
+    });
+    if (discount > 100) {
+      throw new HttpException(
+        'Discount must be between 0 and 100',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${productId} not found`);
+    }
+    if (discount === 0) {
+      if (product.originalPrice) {
+        product.price = product.originalPrice;
+        product.discount = null;
+        product.originalPrice = null;
+      }
+    } else {
+      if (product.originalPrice) {
+        product.price = product.originalPrice;
+      }
+      product.originalPrice = product.price;
+      product.price = Math.round(
+        product.price - product.price * (discount / 100),
+      );
+
+      console.log(product.price);
+      product.discount = discount;
+    }
+
+    await this.productRepository.save(product);
+    return product;
+  }
 }
