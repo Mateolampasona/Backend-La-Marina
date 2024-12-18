@@ -104,4 +104,32 @@ export class OrderDetailsService {
 
     return total;
   }
+
+  async deleteOrderDetail(detailId: string) {
+    const detail = await this.orderDetailRepository.findOne({
+      where: { id: detailId },
+      relations: ['order'],
+    });
+
+    if (!detail) {
+      throw new BadRequestException('Order detail not found');
+    }
+    const order = detail.order;
+
+    await this.orderDetailRepository.delete(detailId);
+
+    const orderDetails = await this.orderDetailRepository.find({
+      where: { order: order },
+    });
+
+    const total = await this.calculateTotal(order.id);
+
+    order.totalOrder = total;
+    await this.orderRepository.save(order);
+
+    return {
+      message: `Order detail with id ${detailId} has been deleted`,
+      order,
+    };
+  }
 }

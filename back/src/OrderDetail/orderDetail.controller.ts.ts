@@ -2,6 +2,7 @@
 import {
   Body,
   Controller,
+  Delete,
   HttpCode,
   HttpException,
   HttpStatus,
@@ -30,6 +31,18 @@ export class OrderDetailsController {
     const userId = req.user.userId;
     try {
       return await this.orderDetailsService.addProduct(orderDetail, userId);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  // @Roles(Role.Admin, Role.Guest, Role.User)
+  // @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Delete('/delete')
+  @HttpCode(HttpStatus.OK)
+  async deleteOrderDetail(@Body('detailId') detailId: string) {
+    try {
+      return await this.orderDetailsService.deleteOrderDetail(detailId);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
