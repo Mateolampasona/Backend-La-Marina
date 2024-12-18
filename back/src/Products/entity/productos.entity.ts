@@ -26,6 +26,12 @@ export class Product {
   @Column({ type: 'int', nullable: false })
   price: number;
 
+  @Column({ type: 'int', nullable: true })
+  discount?: number;
+
+  @Column({ type: 'int', nullable: true })
+  originalPrice?: number;
+
   @Column({ type: 'text', nullable: false })
   imageUrl: string;
 

@@ -141,4 +141,19 @@ export class ProductsController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
+
+  // @Roles(Role.Admin)
+  // @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Put(':id/discount')
+  @HttpCode(HttpStatus.OK)
+  async addDiscount(
+    @Param('id') productId: number,
+    @Body('discount') discount: any,
+  ) {
+    try {
+      return this.productService.addDiscount(productId, discount);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
 }
