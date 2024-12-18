@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { PaymentDto } from './dto/payment.dto';
 import { Roles } from 'src/decorators/roles.decorator';
@@ -13,10 +21,9 @@ export class PaymentController {
   @Roles(Role.Admin, Role.User, Role.Vip)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Post('create_preference')
-  async createPReference(
-    @Body() data: PaymentDto,
-  ): Promise<{ preferenceId: string }> {
-    const preferenceId = await this.paymentService.createPreference(data);
+  async createPReference(@Req() req: any): Promise<{ preferenceId: string }> {
+    const email = req.user.email;
+    const preferenceId = await this.paymentService.createPreference(email);
     return { preferenceId };
   }
 

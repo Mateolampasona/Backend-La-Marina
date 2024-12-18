@@ -22,8 +22,8 @@ import { RoleGuard } from 'src/Auth/roles.guard';
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  // @Roles(Role.Admin)
-  // @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
   async getOrders() {
@@ -49,13 +49,24 @@ export class OrderController {
 
   @Roles(Role.Admin, Role.User, Role.Guest, Role.Vip)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
-  @Get('/get-order')
+  @Get('/get-order-by-user')
   @HttpCode(HttpStatus.OK)
-  async getOrderById(@Req() req: any) {
+  async getOrderByUserId(@Req() req: any) {
     const userId = req.user.userId;
 
     try {
-      return await this.orderService.getOrderById(userId);
+      return await this.orderService.getOrderByUserId(userId);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Get('/get-order/:id')
+  @HttpCode(HttpStatus.OK)
+  async getOrderById(@Param('id') orderId: string) {
+    try {
+      return await this.orderService.getOrderById(orderId);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

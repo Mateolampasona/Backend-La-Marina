@@ -26,19 +26,29 @@ export class OrderService {
     return orders;
   }
 
-  async getOrderById(userId: number) {
+  async getOrderByUserId(userId: number) {
     const user = await this.userService.getOneUser(userId);
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    if (user.order === null) {
+      throw new HttpException('User without orders', HttpStatus.NOT_FOUND);
     }
     const orderId = user.order.id;
     const order = await this.orderRepository.findOne({
       where: { id: orderId },
       relations: ['orderDetails', 'orderDetails.product', 'user'],
     });
-    if (!order) {
-      throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
-    }
+
+    return order;
+  }
+
+  async getOrderById(orderId: string) {
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: ['orderDetails', 'orderDetails.product', 'user'],
+    });
+
     return order;
   }
 

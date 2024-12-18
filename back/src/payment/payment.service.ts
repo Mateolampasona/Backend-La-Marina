@@ -17,13 +17,12 @@ export class PaymentService {
     private readonly orderService: OrderService,
   ) {}
 
-  async createPreference(data: PaymentDto) {
-    const { email, orderId } = data;
+  async createPreference(email: string) {
     const user = await this.userService.getUserByEmail(email);
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    const order = await this.orderService.getOrderById(user.userId);
+    const order = await this.orderService.getOrderByUserId(user.userId);
     if (!order) {
       throw new NotFoundException('Order not found');
     }
