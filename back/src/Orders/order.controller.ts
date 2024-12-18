@@ -22,8 +22,8 @@ import { RoleGuard } from 'src/Auth/roles.guard';
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  @Roles(Role.Admin)
-  @UseGuards(AuthGuard('jwt'), RoleGuard)
+  // @Roles(Role.Admin)
+  // @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
   async getOrders() {
@@ -47,7 +47,7 @@ export class OrderController {
   //   }
   // }
 
-  @Roles(Role.Admin, Role.User)
+  @Roles(Role.Admin, Role.User, Role.Guest, Role.Vip)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Get('/get-order')
   @HttpCode(HttpStatus.OK)

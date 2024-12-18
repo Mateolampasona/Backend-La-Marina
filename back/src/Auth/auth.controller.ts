@@ -22,6 +22,10 @@ import { ChangePasswordDto } from './dto/changePassword.dto';
 import { AssignPasswordDto } from './dto/assignPassword.dto';
 import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
 import { Public } from 'src/decorators/public.decorator';
+import { Roles } from 'src/decorators/roles.decorator';
+import { Role } from './enum/roles.enum';
+import { AuthGuard } from '@nestjs/passport';
+import { RoleGuard } from './roles.guard';
 
 @Controller('Auth')
 export class AuthController {
@@ -64,6 +68,7 @@ export class AuthController {
   @Put('forgot-password')
   @HttpCode(HttpStatus.OK)
   async forgotPassword(@Body() email: string) {
+    console.log(email);
     try {
       return this.authService.forgotPassword(email);
     } catch (error) {
@@ -71,6 +76,8 @@ export class AuthController {
     }
   }
 
+  @Roles(Role.Admin, Role.User, Role.Vip)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Put(':id/assign-password')
   @HttpCode(HttpStatus.OK)
   async assignPassword(

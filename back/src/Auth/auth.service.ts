@@ -121,9 +121,12 @@ export class AuthService {
 
   async forgotPassword(email: string) {
     const user = await this.userService.getUserByEmail(email);
+    console.log(user);
+
     if (!user) {
       throw new NotFoundException(`User with email ${email} not found`);
     }
+
     const newPassword = this.generatePassword();
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await this.userService.updatePassword(user.userId, hashedPassword);

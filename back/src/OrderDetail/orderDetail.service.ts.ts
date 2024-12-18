@@ -63,7 +63,7 @@ export class OrderDetailsService {
 
     if (existingOrderDetail) {
       // Update the quantity of the existing order detail
-      existingOrderDetail.quantity += orderDetail.quantity;
+      existingOrderDetail.quantity = orderDetail.quantity;
       await this.orderDetailRepository.save(existingOrderDetail);
     } else {
       // Create a new order detail
