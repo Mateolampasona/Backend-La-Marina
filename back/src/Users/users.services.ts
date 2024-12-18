@@ -24,14 +24,22 @@ export class UsersService {
     return users;
   }
 
-  async getUserById(id: number): Promise<User> {
+  async getOneUser(id: number): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { userId: id },
-      relations: ['order'],
+      relations: ['order', 'order.orderDetails'],
     });
     if (!user) {
       throw new BadRequestException(`User with id ${id} not found`);
     }
+    return user;
+  }
+
+  async getUserByEmail(email: string) {
+    const user = await this.usersRepository.findOne({
+      where: { email },
+    });
+
     return user;
   }
 
@@ -75,31 +83,21 @@ export class UsersService {
     }
   }
 
-  async getUserByEmail(email: string): Promise<User> {
-    console.log('email', email);
-
-    const user = await this.usersRepository.findOne({
-      where: { email },
-    });
-    console.log(user);
-
-    return user;
-  }
-
   async updateUser(
-    id: number,
+    userId: number,
     modifyUserDto: ModifyUserDto,
   ): Promise<{ message: string; updatedUser: User }> {
     const user = await this.usersRepository.findOne({
-      where: { userId: id },
+      where: { userId: userId },
     });
+
     if (!user) {
-      throw new BadRequestException(`User with id ${id} not found`);
+      throw new BadRequestException(`User with id ${userId} not found`);
     }
     try {
-      await this.usersRepository.update(id, modifyUserDto);
+      await this.usersRepository.update(userId, modifyUserDto);
       const updatedUser = await this.usersRepository.findOne({
-        where: { userId: id },
+        where: { userId: userId },
       });
       return { message: 'User updated successfully', updatedUser };
     } catch (error) {

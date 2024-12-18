@@ -10,6 +10,7 @@ import {
   Param,
   Post,
   Put,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.services';
@@ -51,17 +52,28 @@ export class UsersController {
 
   @Roles(Role.Admin, Role.User, Role.Vip)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
-  @Put(':id')
+  @Get('email')
+  async getUserByEmail(@Body() data: any) {
+    const email = data.email;
+    console.log('email:', email);
+    try {
+      return await this.userService.getUserByEmail(email);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Roles(Role.Admin, Role.User, Role.Vip)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Put('modify')
   @ApiOperation({ summary: 'Update user by id' })
   @ApiResponse({ status: 200, description: 'User updated', type: User })
   @ApiResponse({ status: 400, description: 'Error message', type: String })
   @HttpCode(HttpStatus.OK)
-  async updateUser(
-    @Param('id') id: number,
-    @Body() modifyUserDto: ModifyUserDto,
-  ) {
+  async updateUser(@Body() modifyUserDto: ModifyUserDto, @Req() req) {
+    const userId = req.user.userId;
     try {
-      return await this.userService.updateUser(id, modifyUserDto);
+      return await this.userService.updateUser(userId, modifyUserDto);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -134,7 +146,7 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   async getUserById(@Param('id') id: number): Promise<User> {
     try {
-      return await this.userService.getUserById(id);
+      return await this.userService.getOneUser(id);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

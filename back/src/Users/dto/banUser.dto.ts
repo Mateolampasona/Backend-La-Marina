@@ -11,14 +11,13 @@ export class BanUserDto {
   @ApiProperty({
     type: String,
     description: 'The reason for the ban',
-    required: true,
   })
   @IsString()
   @IsNotEmpty()
-  banreason: string;
+  banreason?: string = 'Fuiste baneado por incmoplimiento de las normas';
 
   @ApiHideProperty()
   @IsOptional()
   @IsBoolean()
-  permanent: boolean = true;
+  permanent?: boolean = true;
 }

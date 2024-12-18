@@ -67,8 +67,10 @@ export class AuthController {
 
   @Put('forgot-password')
   @HttpCode(HttpStatus.OK)
-  async forgotPassword(@Body() email: string) {
-    console.log(email);
+  async forgotPassword(@Body() data: any) {
+    const email = data.email;
+    console.log('email:', email);
+
     try {
       return this.authService.forgotPassword(email);
     } catch (error) {

@@ -27,7 +27,7 @@ export class OrderService {
   }
 
   async getOrderById(userId: number) {
-    const user = await this.userService.getUserById(userId);
+    const user = await this.userService.getOneUser(userId);
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
@@ -51,7 +51,7 @@ export class OrderService {
       throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
     }
 
-    const user = await this.userService.getUserById(userId);
+    const user = await this.userService.getOneUser(userId);
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
