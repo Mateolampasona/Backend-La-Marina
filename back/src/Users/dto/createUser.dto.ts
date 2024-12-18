@@ -63,3 +63,14 @@ export class CreateUserDto {
   @IsOptional()
   authProvider?: string;
 }
+
+export class MailDto {
+  @ApiProperty({
+    type: String,
+    description: 'The email of the user',
+    required: true,
+  })
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+}

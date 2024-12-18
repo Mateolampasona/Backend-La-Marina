@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 
 dotenv.config({
-  path: '.env',
+  path: '.env.development',
 });
 
 const nodemailer = require('nodemailer');

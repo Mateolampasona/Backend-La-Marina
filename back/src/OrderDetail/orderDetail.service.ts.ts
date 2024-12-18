@@ -20,7 +20,7 @@ export class OrderDetailsService {
   ) {}
 
   async addProduct(orderDetail: AddProductDto, userId: number) {
-    const user = await this.userService.getUserById(userId);
+    const user = await this.userService.getOneUser(userId);
     if (!user) {
       throw new BadRequestException('User not found');
     }
