@@ -11,11 +11,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   // Habilitar CORS
-  app.enableCors({
-    origin: 'http://localhost:3001', // Cambia esto al origen de tu frontend
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-  });
+  app.enableCors();
 
   const config = new DocumentBuilder()
     .setTitle('API de La Marina')
