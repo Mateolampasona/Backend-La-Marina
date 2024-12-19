@@ -142,8 +142,8 @@ export class ProductsController {
     }
   }
 
-  // @Roles(Role.Admin)
-  // @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Put(':id/discount')
   @HttpCode(HttpStatus.OK)
   async addDiscount(

@@ -3,24 +3,24 @@ import { connectionSource } from 'src/Config/data-source';
 
 const categories = [
   {
-    name: 'Electronics',
-    description: 'Devices and gadgets',
+    name: 'Quimicos',
+    description: 'Quimicos de limpieza',
   },
   {
-    name: 'Clothing',
-    description: 'Apparel and accessories',
+    name: 'Papel Linea Hogar',
+    description: 'Papel higienico, papel toalla, servilletas, etc',
   },
   {
-    name: 'Home & Kitchen',
-    description: 'Household items and kitchenware',
+    name: 'Papel Linea industrial',
+    description: 'Papel higienico industrial, obbina de papel, toallas, etc',
   },
   {
-    name: 'Books',
-    description: 'Printed and digital books',
+    name: 'Bazar',
+    description: 'Bazar y utensilios de cocina',
   },
   {
-    name: 'Sports & Outdoors',
-    description: 'Sporting goods and outdoor equipment',
+    name: 'Limpieza',
+    description: 'Productos de limpieza',
   },
 ];
 
