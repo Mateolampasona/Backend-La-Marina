@@ -1,5 +1,5 @@
-import { Category } from 'src/Categories/entity/categories.entity';
-import { connectionSource } from 'src/Config/data-source';
+import { Category } from '../Categories/entity/categories.entity';
+import { connectionSource } from '../Config/data-source';
 
 const categories = [
   {

@@ -1,6 +1,6 @@
-import { Category } from 'src/Categories/entity/categories.entity';
+import { Category } from '../Categories/entity/categories.entity';
 import { connectionSource } from 'src/Config/data-source';
-import { Product } from 'src/Products/entity/productos.entity';
+import { Product } from '../Products/entity/productos.entity';
 
 const products = [
   {
