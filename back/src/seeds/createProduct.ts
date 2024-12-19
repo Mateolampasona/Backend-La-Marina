@@ -1,5 +1,5 @@
 import { Category } from '../Categories/entity/categories.entity';
-import { connectionSource } from 'src/Config/data-source';
+import { connectionSource } from '../config/data-source';
 import { Product } from '../Products/entity/productos.entity';
 
 const products = [

@@ -1,5 +1,5 @@
 import { Category } from '../Categories/entity/categories.entity';
-import { connectionSource } from '../Config/data-source';
+import { connectionSource } from '../config/data-source';
 
 const categories = [
   {

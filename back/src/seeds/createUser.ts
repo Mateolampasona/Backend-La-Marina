@@ -1,5 +1,5 @@
 import { connectionSource } from '../Config/data-source';
-import { User } from '../Users/entity/user.entity';
+import { User } from '../users/entity/user.entity';
 
 const users = [
   {
