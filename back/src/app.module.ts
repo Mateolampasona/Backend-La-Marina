@@ -10,6 +10,7 @@ import { OrderModule } from './Orders/ordenes.module';
 import { ProductsModule } from './Products/productos.module';
 import { UsersModule } from './Users/users.module';
 import { PaymentModule } from './payment/payment.module';
+import { FormModule } from './forms/form.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { PaymentModule } from './payment/payment.module';
     OrderModule,
     OrderDetailModule,
     PaymentModule,
+    FormModule
   ],
   controllers: [],
   providers: [],

@@ -173,4 +173,35 @@ export const sendUnbanNotificationEmail = async (
   } catch (error) {
     console.error(`Error sending unban notification email to ${email}:`, error);
   }
+
+  
 };
+
+export const sendContactFormToAdmins = async (
+  name: string,
+  email: string,
+  subject: string,
+  message: string,
+) => {
+  const admins = ["mateolampasona7@gmail.com"]
+  const Subject = `Nuevo mensaje de ${name} 📬`
+  const body = `
+    <p>Nombre: ${name}</p>
+    <p>Email: ${email}</p>
+    <p>Asunto: ${subject}</p>
+    <p>Mensaje: ${message}</p>
+    `;
+  const htmlContent = generateEmailContent(Subject, body);
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: admins.join(", "),
+    Subject,
+    html: htmlContent,
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Contact form email sent to admins`);
+  } catch (error) {
+    console.error(`Error sending contact form email to admins:`, error);
+  }
+}
