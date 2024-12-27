@@ -27,6 +27,10 @@ import { Role } from './enum/roles.enum';
 import { AuthGuard } from '@nestjs/passport';
 import { RoleGuard } from './roles.guard';
 
+const API_URL = process.env.FRONT_URL;
+console.log('API_URL:', API_URL);
+
+
 @Controller('Auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -116,6 +120,6 @@ export class AuthController {
   @Get('google/callback')
   async googleCallback(@Req() req, @Res() res) {
     const response = await this.authService.signInOauth(req.user);
-    res.redirect(`http://localhost:3001/Login?token=${response.accessToken}` );
+    res.redirect(`${API_URL}}token=${response.accessToken}` );
   }
 }
