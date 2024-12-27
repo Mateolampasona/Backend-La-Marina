@@ -121,6 +121,6 @@ export class AuthController {
   async googleCallback(@Req() req, @Res() res) {
     const response = await this.authService.signInOauth(req.user);
     console.log(response.accessToken);
-    res.redirect(`https://frontend-la-marina.vercel.app/?token=${response.accessToken}` );
+    res.redirect(`${API_URL}/login?token=${response.accessToken}` );
   }
 }
