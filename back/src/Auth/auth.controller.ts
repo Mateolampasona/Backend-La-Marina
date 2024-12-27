@@ -117,9 +117,10 @@ export class AuthController {
 
   @Public()
   @UseGuards(GoogleAuthGuard)
-  @Get('google/callbackssss')
+  @Get('google/callback')
   async googleCallback(@Req() req, @Res() res) {
     const response = await this.authService.signInOauth(req.user);
+    console.log(response.accesstoken);
     res.redirect(`${API_URL}?token=${response.accessToken}` );
   }
 }
