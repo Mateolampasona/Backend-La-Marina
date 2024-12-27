@@ -7,8 +7,7 @@ const users = [
     email: 'john.doe@example.com',
     password: 'hashedPassword1',
     authProvider: 'local',
-    createdAt: new Date(),
-    orders: [],
+    createdAt: new Date()
   },
   {
     name: 'Jane Smith',
