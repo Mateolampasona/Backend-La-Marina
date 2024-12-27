@@ -120,7 +120,7 @@ export class AuthController {
   @Get('google/callback')
   async googleCallback(@Req() req, @Res() res) {
     const response = await this.authService.signInOauth(req.user);
-    console.log(response.accesstoken);
+    console.log(response.accessToken);
     res.redirect(`${API_URL}?token=${response.accessToken}` );
   }
 }
