@@ -204,4 +204,44 @@ export const sendContactFormToAdmins = async (
   } catch (error) {
     console.error(`Error sending contact form email to admins:`, error);
   }
+
+
+}
+
+export const sendPurchaseMail = async (
+  email: string,
+  name: string,
+  date: Date,
+  total: number,
+) => {
+  const subject = 'Compra realizada en La Marina';
+  const formattedDate = date.toLocaleDateString('es-AR', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+  const body = `
+    <p>Hola ${name}👋,</p>
+    <p>Gracias por tu compra en La Marina. Aquí tienes los detalles de tu pedido:</p>
+    <p>Fecha: ${formattedDate}</p>
+    <p>Total: ${total}</p>
+    <p>Tu pedido se entregará de 1 a 3 días hábiles.</p>
+    <p>Si tienes alguna duda, no dudes en contactarnos al WhatsApp 2645724251.</p>
+    <p><a href="https://wa.me/2645724251" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #ffffff; background-color: #25D366; text-decoration: none; border-radius: 5px;">Contactar por WhatsApp</a></p>
+  `;
+
+  const htmlContent = generateEmailContent('Compra realizada en La Marina', body);
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject,
+    html: htmlContent,
+  };
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Email sent to ${email}`);
+  } catch (error) {
+    console.error(`Error sending email to ${email}:`, error);
+  }
 }

@@ -10,6 +10,7 @@ import {
   OneToOne,
 } from 'typeorm';
 import { OrderDetail } from '../../OrderDetail/entity/orderDetail.entity';
+import { Compras } from 'src/Compras/entity/compras.entity';
 
 @Entity({ name: 'orders' })
 export class Order {
@@ -38,4 +39,7 @@ export class Order {
 
   @Column()
   totalOrder: number = 0;
+  
+  @OneToMany(() => Compras, (compras) => compras.order, { nullable: true })
+  compras: Compras[];
 }
