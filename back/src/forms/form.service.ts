@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { ContactFormDto } from "./dto/contactForm.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ContactForm } from "./entity/formContact.entity";
@@ -15,7 +15,7 @@ export class FormService {
   async contactForm(data: ContactFormDto) {
     const {name, email, subject, message} = data;
     if (!name || !email || !subject || !message) {
-      throw new Error('All fields are required');
+      throw new BadRequestException('All fields are required');
     }
     await this.contactFormRepository.create(data);
    const savedForm = await this.contactFormRepository.save(data);
@@ -32,7 +32,11 @@ export class FormService {
  async  newsLetterForm(data: MailDto) {
     const {email} = data;
     if (!email) {
-      throw new Error('Email field is required');
+      throw new BadRequestException('Email field is required');
+    }
+    const createdForm = await this.newsLetterRepository.findOne({where: {email}});
+    if(createdForm){
+      throw new BadRequestException('Email already exists');
     }
     await this.newsLetterRepository.create(data);
     const savedForm = await this.newsLetterRepository.save(data);
@@ -43,7 +47,7 @@ export class FormService {
   async getContactForm() {
     const forms = await this.contactFormRepository.find();
     if(!forms){
-      throw new Error('No forms found');
+      throw new BadRequestException('No forms found');
     }
     return forms
   }
@@ -51,7 +55,7 @@ export class FormService {
   async getNewsLetterForm() {
     const forms = await this.newsLetterRepository.find();
     if(!forms){
-      throw new Error('No forms found');
+      throw new BadRequestException('No forms found');
     }
     return forms
   }
