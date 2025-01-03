@@ -11,7 +11,7 @@ import { ProductsModule } from './Products/productos.module';
 import { UsersModule } from './Users/users.module';
 import { PaymentModule } from './payment/payment.module';
 import { FormModule } from './forms/form.module';
-import { PedidosModule } from './Compras/pedidos.module';
+import { ComprasModule } from './Compras/compras.module';
 
 @Module({
   imports: [
@@ -32,7 +32,7 @@ import { PedidosModule } from './Compras/pedidos.module';
     OrderDetailModule,
     PaymentModule,
     FormModule,
-    PedidosModule
+    ComprasModule
   ],
   controllers: [],
   providers: [],

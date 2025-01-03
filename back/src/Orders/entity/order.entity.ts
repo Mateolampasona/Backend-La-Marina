@@ -39,7 +39,6 @@ export class Order {
 
   @Column()
   totalOrder: number = 0;
-  
-  @OneToMany(() => Compras, (compras) => compras.order, { nullable: true })
-  compras: Compras[];
+
+
 }

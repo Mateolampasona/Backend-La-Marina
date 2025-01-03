@@ -1,5 +1,4 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
-import { PaymentDto } from './dto/payment.dto';
+import { HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { UsersService } from 'src/Users/users.services';
 import { OrderService } from 'src/Orders/ordenes.service';
 import MercadoPagoConfig, { Preference } from 'mercadopago';
@@ -9,6 +8,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Compras } from 'src/Compras/entity/compras.entity';
 import { Repository } from 'typeorm';
 import { sendPurchaseMail } from 'src/Config/nodeMailer';
+import { PurchaseDetail } from 'src/Compras/entity/purchaseDetail.entity';
+import { Order } from 'src/Orders/entity/order.entity';
 
 dotenvConfig({ path: '.env' });
 const client = new MercadoPagoConfig({
@@ -24,7 +25,9 @@ export class PaymentService {
     private readonly userService: UsersService,
     private readonly orderService: OrderService,
     private readonly productService: ProductService,
-    @InjectRepository(Compras) private readonly comprasRepository: Repository<Compras>
+    @InjectRepository(Compras) private readonly comprasRepository: Repository<Compras>,
+    @InjectRepository(PurchaseDetail) private readonly purchaseDetailRepository: Repository<PurchaseDetail>,
+    @InjectRepository(Order) private readonly orderRepository: Repository<Order>,
   ) {}
 
   async createPreference(email: string) {
@@ -128,14 +131,33 @@ export class PaymentService {
     const date = new Date();
     const total = order.totalOrder;
     try {
+      // Creamos la compra
       const compra = await this.comprasRepository.create({
-        order:order,
         user: user,
         status:"Pendiente",
         paymentMethod:"Mercado Pago",
-        payment_preference_id:preference_Id
+        payment_preference_id:preference_Id,
+        total: order.totalOrder
       })
+      // Guaradamos la compra
       await this.comprasRepository.save(compra)
+
+      // Creamos los detalles de compra
+      for(const orderDetail of order.orderDetails) {
+        const purchaseDetail = this.purchaseDetailRepository.create({
+          compra:compra,
+          product:orderDetail.product,
+          quantity:orderDetail.quantity,
+          subtotal:orderDetail.product.price
+        })
+        // guardamos el detalle de compra
+        await this.purchaseDetailRepository.save(purchaseDetail)
+      }
+      // Vaciamos el carrito del usuario
+      order.orderDetails = []
+      order.totalOrder = 0
+      await this.orderRepository.save(order)
+
       console.log("Enviando email");
       await sendPurchaseMail(email, name, date, total);
       console.log("Email enviado");
@@ -149,6 +171,7 @@ export class PaymentService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+    return { message: 'Payment successful' };
     
   }
   

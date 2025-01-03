@@ -48,6 +48,9 @@ export class OrderService {
       where: { id: orderId },
       relations: ['orderDetails', 'orderDetails.product', 'user'],
     });
+    if(!order){
+      throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
+    }
 
     return order;
   }
