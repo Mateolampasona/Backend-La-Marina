@@ -1,11 +1,17 @@
 import { IsNotEmpty } from 'class-validator';
 import { Order } from 'src/Orders/entity/order.entity';
 import { Product } from 'src/Products/entity/productos.entity';
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity({ name: 'orderDetail' })
 export class OrderDetail {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   @IsNotEmpty()
   id: string;
 
@@ -20,6 +26,4 @@ export class OrderDetail {
   @Column()
   @IsNotEmpty()
   quantity: number;
-
-
 }

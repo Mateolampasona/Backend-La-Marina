@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -40,4 +41,38 @@ export class PaymentController {
     console.log('Notification data: ', notificationData);
     return { received: true };
   }
+
+  @Post('success')
+  async handleSuccess(@Body('collection_status') collectionStatus: boolean,
+  @Body('payment_id') paymentId: string,
+  @Body('status') status: boolean,
+  @Body('preference_id') preferenceId: string,
+  @Body('id') id: string,) {
+    console.log('Collection Status:', collectionStatus);
+    console.log('Payment ID:', paymentId);
+    console.log('Status:', status);
+    console.log('ID:', id);
+    try {
+      const payment = await this.paymentService.handlePaymentSuccess(
+        collectionStatus,
+        paymentId,
+        status,
+        id,
+        preferenceId,
+      );
+      return payment;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
 }
+
+@Get('failure') 
+async handlePaymentFailure() {
+  try{
+    return "Ocurrio un error al realizar el pago"
+  } catch (error) {
+    throw new BadRequestException(error.message);
+  }
+}
+}
+

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Role } from 'src/Auth/enum/roles.enum';
+import { Compras } from 'src/Compras/entity/compras.entity';
 import { Order } from 'src/Orders/entity/order.entity';
 import {
   Column,
@@ -71,4 +72,7 @@ export class User {
 
   @Column({ type: 'boolean', default: false })
   isBanned: boolean;
+
+  @OneToMany(() => Compras, (compras) => compras.user, { nullable: true })
+  compras: Compras[];
 }
