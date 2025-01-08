@@ -7,6 +7,7 @@ import { ProductService } from '../Products/productos.service';
 import { OrderDetail } from './entity/orderDetail.entity';
 import { log } from 'node:console';
 import { UsersService } from 'src/Users/users.services';
+import { DeleteOrderDetailDto } from './dto/deleteOrderDetail.dto';
 
 @Injectable()
 export class OrderDetailsService {
@@ -17,7 +18,7 @@ export class OrderDetailsService {
     private readonly orderDetailRepository: Repository<OrderDetail>,
     private readonly productService: ProductService,
     private readonly userService: UsersService,
-  ) {}
+  ) { }
 
   async addProduct(orderDetail: AddProductDto, userId: number) {
     const user = await this.userService.getOneUser(userId);
@@ -105,7 +106,8 @@ export class OrderDetailsService {
     return total;
   }
 
-  async deleteOrderDetail(detailId: string) {
+  async deleteOrderDetail(deleteOrderDetailDto: DeleteOrderDetailDto) {
+    const detailId = deleteOrderDetailDto.detailId
     const detail = await this.orderDetailRepository.findOne({
       where: { id: detailId },
       relations: ['order'],
