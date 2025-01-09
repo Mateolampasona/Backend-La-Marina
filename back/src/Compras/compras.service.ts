@@ -6,7 +6,6 @@ import { Repository } from "typeorm";
 @Injectable()
 export class ComprasService {
 
-
 constructor(@InjectRepository(Compras) private readonly comprasRepository: Repository<Compras>) {}
 
 async getCompras() {
@@ -23,5 +22,23 @@ async getCompraById(id:string) {
     }
     return compra
 }
+
+async getTotalVentas() {
+    const compras = await this.comprasRepository.find();
+    if (!compras || compras.length === 0) {
+      throw new BadRequestException('No se encontraron compras');
+    }
+    const totalVentas = compras.reduce((sum, compra) => sum + compra.total, 0);
+    return  totalVentas ;
+}
+
+async getLastcompra() {
+    const [lastCompra] = await this.comprasRepository.find({ order: { purchaseDate: 'DESC' }, take: 1 });
+if(!lastCompra){
+    throw new BadRequestException('No se encontró la última compra')
+}
+return lastCompra
+}
+
 
 }

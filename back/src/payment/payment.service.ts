@@ -137,7 +137,8 @@ export class PaymentService {
         status:"Pendiente",
         paymentMethod:"Mercado Pago",
         payment_preference_id:preference_Id,
-        total: order.totalOrder
+        total: order.totalOrder,
+        purchaseDate: new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }))
       })
       // Guaradamos la compra
       await this.comprasRepository.save(compra)
