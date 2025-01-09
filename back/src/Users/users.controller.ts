@@ -49,6 +49,30 @@ export class UsersController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
+  
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Get("total-users")
+  @HttpCode(HttpStatus.OK)
+  async getTotalUsers() {
+    try{
+      return await this.userService.getTotalUsers();
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Get("last-user")
+  @HttpCode(HttpStatus.OK)
+  async getLastUser() {
+    try{
+      return await this.userService.getLastUser();
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
 
   @Roles(Role.Admin, Role.User, Role.Vip)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
@@ -145,10 +169,13 @@ export class UsersController {
   @ApiResponse({ status: 400, description: 'Error message', type: String })
   @HttpCode(HttpStatus.OK)
   async getUserById(@Param('id') id: number): Promise<User> {
+    Number(id);
     try {
       return await this.userService.getOneUser(id);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
+
+  
 }

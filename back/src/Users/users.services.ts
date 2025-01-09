@@ -13,6 +13,7 @@ import {
 } from 'src/Config/nodeMailer';
 @Injectable()
 export class UsersService {
+  
   constructor() {}
   @InjectRepository(User) private readonly usersRepository: Repository<User>;
 
@@ -183,4 +184,23 @@ export class UsersService {
       throw new BadRequestException('error unbanning user', error.message);
     }
   }
+
+  async getTotalUsers():Promise<number> {
+    const totalusers = await this.usersRepository.count();
+    if(!totalusers) {
+      throw new BadRequestException('No users found');
+    }
+    return totalusers;
+}
+
+async getLastUser(): Promise<User> {
+  const [lastUser] = await this.usersRepository.find({
+    order: { createdAt: 'DESC' },
+    take: 1,
+  });
+  if (!lastUser) {
+    throw new BadRequestException('No users found');
+  }
+  return lastUser;
+}
 }

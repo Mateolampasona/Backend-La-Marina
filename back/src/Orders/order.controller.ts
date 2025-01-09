@@ -17,6 +17,7 @@ import { Roles } from 'src/decorators/roles.decorator';
 import { Role } from 'src/Auth/enum/roles.enum';
 import { AuthGuard } from '@nestjs/passport';
 import { RoleGuard } from 'src/Auth/roles.guard';
+import { get } from 'http';
 
 @Controller('Orders')
 export class OrderController {
@@ -34,18 +35,6 @@ export class OrderController {
     }
   }
 
-  // @Roles(Role.Admin, Role.Guest, Role.User)
-  // @UseGuards(AuthGuard('jwt'), RoleGuard)
-  // @Post('create-order')
-  // @HttpCode(HttpStatus.CREATED)
-  // async createOrder(@Req() req: any) {
-  //   const userId = req.user.userId;
-  //   try {
-  //     return await this.orderService.createOrder(userId);
-  //   } catch (error) {
-  //     throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-  //   }
-  // }
 
   @Roles(Role.Admin, Role.User, Role.Guest, Role.Vip)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
@@ -60,6 +49,31 @@ export class OrderController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
+
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Get("total-orders")
+  @HttpCode(HttpStatus.OK)
+  async getTotalOrders() {
+    try {
+      return await this.orderService.getTotalOrders();
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Get("last-order")
+  @HttpCode(HttpStatus.OK)
+  async getLastOrder() {
+    try {
+      return await this.orderService.getLastOrder();
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   @Roles(Role.Admin)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Get('/get-order/:id')

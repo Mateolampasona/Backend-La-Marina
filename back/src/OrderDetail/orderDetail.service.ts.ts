@@ -31,6 +31,7 @@ export class OrderDetailsService {
       // En caso de que el usuario no tenga una orden crearemos una
       const orderCreated = this.orderRepository.create({
         user: user,
+        createdAt: new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }))
       });
       await this.orderRepository.save(orderCreated);
 

@@ -8,6 +8,8 @@ import { Order } from './entity/order.entity';
 
 @Injectable()
 export class OrderService {
+  
+  
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
@@ -83,24 +85,22 @@ export class OrderService {
     return { message: `Order with ID ${id} sucesfully deleted` };
   }
 
-  // async createOrder(userId: number) {
-  //   const user = await this.userService.getUserById(userId);
-  //   if (!user) {
-  //     throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-  //   }
-  //   const newOrder = await this.orderRepository.create({ user });
-  //   await this.orderRepository.save(newOrder);
-  //   return {
-  //     id: newOrder.id,
-  //     total: newOrder.totalOrder,
-  //     status: newOrder.status,
-  //     createdAt: newOrder.createdAt,
-  //     user: {
-  //       id: user.userId,
-  //       email: user.email,
-  //       name: user.name,
-  //     },
-  //     orderdetails: [],
-  //   };
-  // }
+async getTotalOrders() {
+  const totalOrders = await this.orderRepository.count();
+  if(!totalOrders){
+    throw new HttpException('No orders found', HttpStatus.NOT_FOUND);
+  }
+  return totalOrders
+}
+
+async getLastOrder() {
+  const [lastOrder] = await this.orderRepository.find({
+    order: { createdAt: 'DESC' },
+    take: 1,
+  });
+  if (!lastOrder) {
+    throw new HttpException('No orders found', HttpStatus.NOT_FOUND);
+  }
+  return lastOrder;
+}
 }

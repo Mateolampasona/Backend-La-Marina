@@ -34,7 +34,10 @@ export class Compras {
   })
   status: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({
+    type: 'timestamp',
+    name: 'purchase_date',
+  })
   purchaseDate: Date;
 
   @Column({ type: 'varchar', length: 50 })
