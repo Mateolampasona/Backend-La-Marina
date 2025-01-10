@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { User } from './entity/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -11,11 +11,18 @@ import {
   sendBanNotificationEmail,
   sendUnbanNotificationEmail,
 } from 'src/Config/nodeMailer';
+import { UserResponseDto } from './dto/userResponse.dto';
+import { Product } from 'src/Products/entity/productos.entity';
+import { ProductService } from 'src/Products/productos.service';
 @Injectable()
 export class UsersService {
   
-  constructor() {}
-  @InjectRepository(User) private readonly usersRepository: Repository<User>;
+  
+  constructor(
+    @InjectRepository(User) private readonly usersRepository: Repository<User>,
+    private readonly productService: ProductService
+) {}
+  
 
   async getUsers(): Promise<User[]> {
     const users = await this.usersRepository.find();
@@ -25,15 +32,16 @@ export class UsersService {
     return users;
   }
 
-  async getOneUser(id: number): Promise<User> {
+  async getOneUser(id: number): Promise<UserResponseDto> {
     const user = await this.usersRepository.findOne({
       where: { userId: id },
-      relations: ['order', 'order.orderDetails'],
+      relations: ['order', 'order.orderDetails', 'order.orderDetails.product', 'compras', 'compras.purchaseDetails', 'compras.purchaseDetails.product', 'favorites'],
     });
     if (!user) {
       throw new BadRequestException(`User with id ${id} not found`);
     }
-    return user;
+    const {password, authProvider, ...userResponse} = user;
+    return userResponse;
   }
 
   async getUserByEmail(email: string) {
@@ -193,7 +201,7 @@ export class UsersService {
     return totalusers;
 }
 
-async getLastUser(): Promise<User> {
+async getLastUser(): Promise<UserResponseDto> {
   const [lastUser] = await this.usersRepository.find({
     order: { createdAt: 'DESC' },
     take: 1,
@@ -201,6 +209,28 @@ async getLastUser(): Promise<User> {
   if (!lastUser) {
     throw new BadRequestException('No users found');
   }
-  return lastUser;
+  const { password: _, ...result } = lastUser;
+      return result;
+}
+
+async addFavoriteProduct(userId: any, productId: number) {
+  const user = await this.usersRepository.findOne({where:{userId}})
+  if(!user) {
+    throw new BadRequestException('User not found');
+  }
+  const product = await this.productService.getProductById(productId);
+  if(!product) {
+    throw new BadRequestException('Product not found');
+  }
+  if(!user.favorites){
+    user.favorites = [];
+  }
+  user.favorites.push(product);
+
+  await this.usersRepository.save(user);
+
+  return {message: 'Product added to favorites', user};
+
+
 }
 }

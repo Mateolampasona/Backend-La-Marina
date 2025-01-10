@@ -13,7 +13,7 @@ import {
 export class OrderDetail {
   @PrimaryGeneratedColumn('uuid')
   @IsNotEmpty()
-  id: string;
+  orderDetailId: string;
 
   @ManyToOne(() => Order, (order) => order.orderDetails)
   @JoinColumn({ name: 'order_id' })

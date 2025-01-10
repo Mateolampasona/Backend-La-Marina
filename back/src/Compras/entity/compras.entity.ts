@@ -1,16 +1,14 @@
 import { User } from 'src/Users/entity/user.entity';
-import { Order } from 'src/Orders/entity/order.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
-  OneToOne,
-  JoinColumn,
   OneToMany,
 } from 'typeorm';
 import { PurchaseDetail } from './purchaseDetail.entity';
+import { Exclude } from 'class-transformer';
 
 export enum OrderStatus {
   ENTRADO = 'Entregado',
@@ -20,14 +18,16 @@ export enum OrderStatus {
 
 @Entity('compras')
 export class Compras {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn('uuid',)
+  compraId: string;
 
 
   @ManyToOne(() => User, (user) => user.compras, { eager: true })
+  @Exclude()
   user: User;
 
   @Column({
+
     type: 'enum',
     enum: OrderStatus,
     default: OrderStatus.PENDIENTE,
