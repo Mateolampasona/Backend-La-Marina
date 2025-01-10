@@ -12,7 +12,6 @@ import {
   sendUnbanNotificationEmail,
 } from 'src/Config/nodeMailer';
 import { UserResponseDto } from './dto/userResponse.dto';
-import { Product } from 'src/Products/entity/productos.entity';
 import { ProductService } from 'src/Products/productos.service';
 @Injectable()
 export class UsersService {
