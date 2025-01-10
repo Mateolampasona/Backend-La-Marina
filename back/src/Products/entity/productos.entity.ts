@@ -11,11 +11,12 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { User } from 'src/Users/entity/user.entity';
 
 @Entity({ name: 'products' })
 export class Product {
   @PrimaryGeneratedColumn({ name: 'product_id' })
-  id: number;
+  productId: number;
 
   @Column({ type: 'varchar', length: 100, nullable: false })
   name: string;
@@ -67,4 +68,7 @@ export class Product {
     description: 'Ordenes',
   })
   orderDetail: OrderDetail[];
+
+  @ManyToMany(() => User, (user) => user.favorites)
+  users: User[];
 }

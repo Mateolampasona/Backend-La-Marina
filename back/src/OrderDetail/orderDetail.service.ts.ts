@@ -36,14 +36,14 @@ export class OrderDetailsService {
       await this.orderRepository.save(orderCreated);
 
       order = await this.orderRepository.findOne({
-        where: { id: orderCreated.id },
+        where: { orderId: orderCreated.orderId },
         relations: ['orderDetails', 'orderDetails.product'],
       });
     } else {
-      const orderId = user.order.id;
+      const orderId = user.order.orderId;
 
       order = await this.orderRepository.findOne({
-        where: { id: orderId },
+        where: { orderId },
         relations: ['orderDetails', 'orderDetails.product'],
       });
       if (!order) {
@@ -79,7 +79,7 @@ export class OrderDetailsService {
 
     // Refetch the order with the updated order details
     order = await this.orderRepository.findOne({
-      where: { id: order.id },
+      where: { orderId: order.id },
       relations: ['orderDetails', 'orderDetails.product'],
     });
 
@@ -93,7 +93,7 @@ export class OrderDetailsService {
 
   async calculateTotal(orderId: string) {
     const order = await this.orderRepository.findOne({
-      where: { id: orderId },
+      where: { orderId: orderId },
       relations: ['orderDetails', 'orderDetails.product'],
     });
     if (!order) {
@@ -110,7 +110,7 @@ export class OrderDetailsService {
   async deleteOrderDetail(deleteOrderDetailDto: DeleteOrderDetailDto) {
     const detailId = deleteOrderDetailDto.detailId
     const detail = await this.orderDetailRepository.findOne({
-      where: { id: detailId },
+      where: { orderDetailId: detailId },
       relations: ['order'],
     });
 
@@ -125,7 +125,7 @@ export class OrderDetailsService {
       where: { order: order },
     });
 
-    const total = await this.calculateTotal(order.id);
+    const total = await this.calculateTotal(order.orderId);
 
     order.totalOrder = total;
     await this.orderRepository.save(order);

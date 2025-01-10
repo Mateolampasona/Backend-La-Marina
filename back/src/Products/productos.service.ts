@@ -35,7 +35,7 @@ export class ProductService {
 
   async getProductById(id: number): Promise<Product> {
     const product = await this.productRepository.findOne({
-      where: { id },
+      where: { productId:id },
       relations: ['category_id'],
     });
     if (!product) {
@@ -51,20 +51,20 @@ export class ProductService {
     id: number,
     actualizarProducto: Partial<UpdateProductDto>,
   ): Promise<Product> {
-    const product = await this.productRepository.findOne({ where: { id } });
+    const product = await this.productRepository.findOne({ where: { productId:id } });
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
     await this.productRepository.update(id, actualizarProducto);
     const productUpdated = await this.productRepository.findOne({
-      where: { id },
+      where: { productId:id },
       relations: ['category_id'],
     });
     return productUpdated;
   }
 
   async deleteProduct(id: number): Promise<string> {
-    const product = await this.productRepository.findOne({ where: { id } });
+    const product = await this.productRepository.findOne({ where: { productId:id } });
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
@@ -98,15 +98,15 @@ export class ProductService {
     // Guardamos el producto en la base de datos
     const savedProduct = await this.productRepository.save(newProduct);
     const productWithCategory = await this.productRepository.findOne({
-      where: { id: savedProduct.id },
+      where: { productId: savedProduct.productId },
       relations: ['category_id'],
     });
     return productWithCategory;
-  }
+  }P
 
   async addDiscount(productId: number, discount: number) {
     const product = await this.productRepository.findOne({
-      where: { id: productId },
+      where: { productId },
     });
     if (discount > 100) {
       throw new HttpException(

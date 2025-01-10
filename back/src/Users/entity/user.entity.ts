@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Role } from 'src/Auth/enum/roles.enum';
 import { Compras } from 'src/Compras/entity/compras.entity';
 import { Order } from 'src/Orders/entity/order.entity';
+import { Product } from 'src/Products/entity/productos.entity';
 import {
   Column,
   CreateDateColumn,
@@ -9,6 +10,8 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   OneToOne,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 
 @Entity({ name: 'users' })
@@ -75,4 +78,13 @@ export class User {
 
   @OneToMany(() => Compras, (compras) => compras.user, { nullable: true })
   compras: Compras[];
+
+  @ManyToMany(() => Product)
+  @JoinTable({
+    name: 'user_favorites',
+    joinColumn: { name: 'user_id', referencedColumnName: 'userId' },
+    inverseJoinColumn: { name: 'product_id', referencedColumnName: 'productId' },
+  })
+  favorites: Product[];
 }
+

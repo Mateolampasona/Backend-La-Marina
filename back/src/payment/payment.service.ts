@@ -56,7 +56,7 @@ export class PaymentService {
         body: {
           items: [
             {
-              id: order.id,
+              id: order.orderId,
               title: 'Orden de compra',
               unit_price: total,
               quantity: 1,
@@ -69,9 +69,9 @@ export class PaymentService {
             email: user.email,
           },
           back_urls: {
-            success: `${process.env.FRONT_URL}/payment/success/${order.id}`,
-            failure: `${process.env.FRONT_URL}/payment/failure/${order.id}`,
-            pending: `${process.env.FRONT_URL}/payment/pending/${order.id}`,
+            success: `${process.env.FRONT_URL}/payment/success/${order.orderId}`,
+            failure: `${process.env.FRONT_URL}/payment/failure/${order.orderId}`,
+            pending: `${process.env.FRONT_URL}/payment/pending/${order.orderId}`,
           },
           notification_url: `${process.env.FRONT_URL}/payment/notification`,
           expires: false,
@@ -114,7 +114,7 @@ export class PaymentService {
     }
 
     // Obtener la cantidad actualizada de entradas disponibles
-    const updatedInventoryCount = await this.getUpdatedInventoryCount(order.id);
+    const updatedInventoryCount = await this.getUpdatedInventoryCount(order.orderId);
     // Transmitir la actualizaciion de la cantidad de entradas disponibles
     // this.monitorInventarioGateway.broadcastInventoryUpdate(
     //   Number(order.id),
@@ -182,12 +182,12 @@ export class PaymentService {
       throw new NotFoundException('Order not found');
     }
     for(const orderDetails of order.orderDetails) {
-      const product = await this.productService.getProductById(orderDetails.product.id);
+      const product = await this.productService.getProductById(orderDetails.product.productId);
       if(!product) {
         throw new NotFoundException('Product not found');
       }
       product.stock -= orderDetails.quantity;
-      await this.productService.modifyProduct(product.id, {stock: product.stock});
+      await this.productService.modifyProduct(product.productId, {stock: product.stock});
     }
 
   }

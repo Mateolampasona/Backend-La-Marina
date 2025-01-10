@@ -36,9 +36,9 @@ export class OrderService {
     if (user.order === null) {
       throw new HttpException('User without orders', HttpStatus.NOT_FOUND);
     }
-    const orderId = user.order.id;
+    const orderId = user.order.orderId;
     const order = await this.orderRepository.findOne({
-      where: { id: orderId },
+      where: {  orderId },
       relations: ['orderDetails', 'orderDetails.product', 'user'],
     });
 
@@ -47,7 +47,7 @@ export class OrderService {
 
   async getOrderById(orderId: string) {
     const order = await this.orderRepository.findOne({
-      where: { id: orderId },
+      where: { orderId },
       relations: ['orderDetails', 'orderDetails.product', 'user'],
     });
     if(!order){
@@ -59,7 +59,7 @@ export class OrderService {
 
   async deleteOrder(id: string, userId: number) {
     const order = await this.orderRepository.findOne({
-      where: { id },
+      where: { orderId:id },
       relations: ['user'],
     });
     if (!order) {

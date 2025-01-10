@@ -15,7 +15,7 @@ import { Compras } from 'src/Compras/entity/compras.entity';
 @Entity({ name: 'orders' })
 export class Order {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  orderId: string;
 
   @OneToOne(() => User, (user) => user.order)
   @JoinColumn({ name: 'user_id' })

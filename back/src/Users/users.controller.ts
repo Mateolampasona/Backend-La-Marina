@@ -28,6 +28,8 @@ import { Roles } from 'src/decorators/roles.decorator';
 import { AuthGuard } from '@nestjs/passport';
 import { RoleGuard } from 'src/Auth/roles.guard';
 import { BanUserDto } from './dto/banUser.dto';
+import { UserResponseDto } from './dto/userResponse.dto';
+import { plainToClass } from 'class-transformer';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -66,9 +68,10 @@ export class UsersController {
   @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Get("last-user")
   @HttpCode(HttpStatus.OK)
-  async getLastUser() {
+  async getLastUser():Promise<UserResponseDto> {
     try{
-      return await this.userService.getLastUser();
+      const user = await this.userService.getLastUser();
+      return plainToClass(UserResponseDto,user)
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -77,11 +80,24 @@ export class UsersController {
   @Roles(Role.Admin, Role.User, Role.Vip)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Get('email')
-  async getUserByEmail(@Body() data: any) {
+  async getUserByEmail(@Body() data: any):Promise<UserResponseDto> {
     const email = data.email;
     console.log('email:', email);
     try {
       return await this.userService.getUserByEmail(email);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Roles(Role.Admin, Role.User, Role.Vip)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Post("favorite-products/:productId")
+  async addFavoriteProduct(@Param('productId') productId: number, @Req() req) {
+    const userId = req.user.userId;
+    Number(productId);
+    try {
+      return await this.userService.addFavoriteProduct(userId, productId);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -168,10 +184,11 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'Return user by id', type: User })
   @ApiResponse({ status: 400, description: 'Error message', type: String })
   @HttpCode(HttpStatus.OK)
-  async getUserById(@Param('id') id: number): Promise<User> {
+  async getUserById(@Param('id') id: number): Promise<UserResponseDto> {
     Number(id);
     try {
-      return await this.userService.getOneUser(id);
+      const user = await this.userService.getOneUser(id);
+      return plainToClass(UserResponseDto,user)
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
