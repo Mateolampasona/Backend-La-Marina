@@ -28,7 +28,7 @@ import { Roles } from 'src/decorators/roles.decorator';
 import { AuthGuard } from '@nestjs/passport';
 import { RoleGuard } from 'src/Auth/roles.guard';
 import { BanUserDto } from './dto/banUser.dto';
-import { UserResponseDto } from './dto/userResponse.dto';
+import { UserResponseDto } from 'src/users/dto/userResponse.dto';
 import { plainToClass } from 'class-transformer';
 
 @ApiTags('Users')
