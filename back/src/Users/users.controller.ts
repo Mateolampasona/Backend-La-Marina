@@ -105,13 +105,15 @@ export class UsersController {
 
   @Roles(Role.Admin, Role.User, Role.Vip)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
-  @Put('modify')
+  @Put('modify/:id')
   @ApiOperation({ summary: 'Update user by id' })
   @ApiResponse({ status: 200, description: 'User updated', type: User })
   @ApiResponse({ status: 400, description: 'Error message', type: String })
   @HttpCode(HttpStatus.OK)
-  async updateUser(@Body() modifyUserDto: ModifyUserDto, @Req() req) {
-    const userId = req.user.userId;
+  async updateUser(@Body() modifyUserDto: ModifyUserDto, @Param('id') id: number) {
+    const userId = id;
+    console.log('userId:', userId);
+    console.log('modifyUserDto:', modifyUserDto);
     try {
       return await this.userService.updateUser(userId, modifyUserDto);
     } catch (error) {
