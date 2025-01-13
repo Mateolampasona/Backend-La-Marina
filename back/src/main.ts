@@ -11,11 +11,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   // Habilitar CORS
-  app.enableCors({
-    origin: ['http://localhost:3000','https://frontend-la-marina.vercel.app'],
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: 'Content-Type, Accept',
-  });
+  app.enableCors();
 
   const config = new DocumentBuilder()
     .setTitle('API de La Marina')
