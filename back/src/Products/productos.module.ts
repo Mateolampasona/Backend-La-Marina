@@ -7,11 +7,12 @@ import { Product } from './entity/productos.entity';
 import { Category } from 'src/Categories/entity/categories.entity';
 import { CloudinaryConfig } from 'src/Config/cloudinary';
 import { CloudinaryService } from './cloudinary.service';
+import { ChatGateway } from 'src/gateway/chat.gateway';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Product, Category])],
   controllers: [ProductsController],
-  providers: [ProductService, CloudinaryConfig, CloudinaryService],
-  exports: [ProductService], // Export ProductService here
+  providers: [ProductService, CloudinaryConfig, CloudinaryService, ChatGateway],
+  exports: [ProductService, ChatGateway], // Export ProductService here
 })
 export class ProductsModule {}

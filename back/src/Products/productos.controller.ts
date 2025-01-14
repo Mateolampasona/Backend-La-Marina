@@ -26,12 +26,14 @@ import { Roles } from 'src/decorators/roles.decorator';
 import { Role } from 'src/Auth/enum/roles.enum';
 import { AuthGuard } from '@nestjs/passport';
 import { RoleGuard } from 'src/Auth/roles.guard';
+import { ChatGateway } from 'src/gateway/chat.gateway';
 
 @Controller('products')
 export class ProductsController {
   constructor(
     private readonly productService: ProductService,
     private readonly cloudinaryService: CloudinaryService,
+    private readonly chatGateway: ChatGateway,
   ) {}
 
   @Get()
@@ -75,9 +77,17 @@ export class ProductsController {
   @ApiResponse({ status: 200, description: 'Product modified', type: Product })
   @ApiResponse({ status: 400, description: 'Error message', type: String })
   @HttpCode(HttpStatus.OK)
-  modifyProduct(@Param('id') id: number, @Body() updateData: UpdateProductDto) {
+  async modifyProduct(
+    @Param('id') id: number,
+    @Body() updateData: UpdateProductDto,
+  ) {
     try {
-      return this.productService.modifyProduct(id, updateData);
+      const updatedProduct = await this.productService.modifyProduct(
+        id,
+        updateData,
+      );
+      this.chatGateway.server.emit('stockUpdate', updatedProduct.productId);
+      return updatedProduct;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

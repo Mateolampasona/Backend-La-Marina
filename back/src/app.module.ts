@@ -12,6 +12,7 @@ import { UsersModule } from './Users/users.module';
 import { PaymentModule } from './payment/payment.module';
 import { FormModule } from './forms/form.module';
 import { ComprasModule } from './Compras/compras.module';
+import { ChatGateway } from './gateway/chat.gateway';
 
 @Module({
   imports: [
@@ -35,6 +36,6 @@ import { ComprasModule } from './Compras/compras.module';
     ComprasModule
   ],
   controllers: [],
-  providers: [],
+  providers: [ChatGateway],
 })
 export class AppModule {}
