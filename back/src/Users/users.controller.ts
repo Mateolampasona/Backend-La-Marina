@@ -30,12 +30,16 @@ import { RoleGuard } from 'src/Auth/roles.guard';
 import { BanUserDto } from './dto/banUser.dto';
 import { UserResponseDto } from 'src/users/dto/responseUser.dto';
 import { plainToClass } from 'class-transformer';
+import { ChatGateway } from 'src/gateway/chat.gateway';
 
 @ApiTags('Users')
 @ApiBearerAuth()
 @Controller('users')
 export class UsersController {
-  constructor(private readonly userService: UsersService) {}
+  constructor(
+    private readonly userService: UsersService,
+    private readonly chatGateway: ChatGateway,
+  ) {}
 
   @Roles(Role.Admin)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
@@ -51,13 +55,13 @@ export class UsersController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
-  
+
   @Roles(Role.Admin)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
-  @Get("total-users")
+  @Get('total-users')
   @HttpCode(HttpStatus.OK)
   async getTotalUsers() {
-    try{
+    try {
       return await this.userService.getTotalUsers();
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -66,12 +70,12 @@ export class UsersController {
 
   @Roles(Role.Admin)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
-  @Get("last-user")
+  @Get('last-user')
   @HttpCode(HttpStatus.OK)
-  async getLastUser():Promise<UserResponseDto> {
-    try{
+  async getLastUser(): Promise<UserResponseDto> {
+    try {
       const user = await this.userService.getLastUser();
-      return plainToClass(UserResponseDto,user)
+      return plainToClass(UserResponseDto, user);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -80,7 +84,7 @@ export class UsersController {
   @Roles(Role.Admin, Role.User, Role.Vip)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Get('email')
-  async getUserByEmail(@Body() data: any):Promise<UserResponseDto> {
+  async getUserByEmail(@Body() data: any): Promise<UserResponseDto> {
     const email = data.email;
     console.log('email:', email);
     try {
@@ -92,12 +96,38 @@ export class UsersController {
 
   @Roles(Role.Admin, Role.User, Role.Vip)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
-  @Post("favorite-products/:productId")
+  @Post('favorite-products/:productId')
   async addFavoriteProduct(@Param('productId') productId: number, @Req() req) {
     const userId = req.user.userId;
     Number(productId);
     try {
-      return await this.userService.addFavoriteProduct(userId, productId);
+      const favorite = await this.userService.addFavoriteProduct(
+        userId,
+        productId,
+      );
+      this.chatGateway.server.emit('addFavoriteProduct', favorite);
+      return { message: 'Product added to favorites', favorite };
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Roles(Role.Admin, Role.User, Role.Vip)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Delete('favorite-products/:productId')
+  async deleteFavoriteProduct(
+    @Param('productId') productId: number,
+    @Req() req,
+  ) {
+    const userId = req.user.userId;
+    Number(productId);
+    try {
+      const favorite = await this.userService.deleteFavoriteProduct(
+        userId,
+        productId,
+      );
+      this.chatGateway.server.emit('deleteFavoriteProduct', favorite);
+      return { message: 'Product deleted from favorites', favorite };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -110,12 +140,17 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'User updated', type: User })
   @ApiResponse({ status: 400, description: 'Error message', type: String })
   @HttpCode(HttpStatus.OK)
-  async updateUser(@Body() modifyUserDto: ModifyUserDto, @Param('id') id: number) {
+  async updateUser(
+    @Body() modifyUserDto: ModifyUserDto,
+    @Param('id') id: number,
+  ) {
     const userId = id;
     console.log('userId:', userId);
     console.log('modifyUserDto:', modifyUserDto);
     try {
-      return await this.userService.updateUser(userId, modifyUserDto);
+      const user = await this.userService.updateUser(userId, modifyUserDto);
+      this.chatGateway.server.emit('updateUser', user);
+      return user;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -190,11 +225,9 @@ export class UsersController {
     Number(id);
     try {
       const user = await this.userService.getOneUser(id);
-      return plainToClass(UserResponseDto,user)
+      return plainToClass(UserResponseDto, user);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
-
-  
 }
