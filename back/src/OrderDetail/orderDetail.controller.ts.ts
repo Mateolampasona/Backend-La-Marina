@@ -39,7 +39,7 @@ export class OrderDetailsController {
         orderDetail,
         userId,
       );
-      this.chatGateway.server.emit('addProductToCart', detail);
+      this.chatGateway.server.emit('cartUpdate', detail);
       return detail;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -53,7 +53,7 @@ export class OrderDetailsController {
   async deleteOrderDetail(@Body() detailId: DeleteOrderDetailDto) {
     try {
       const detail = await this.orderDetailsService.deleteOrderDetail(detailId);
-      this.chatGateway.server.emit('deleteProductFromCart', detail);
+      this.chatGateway.server.emit('cartUpdate', detail);
       return detail;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);

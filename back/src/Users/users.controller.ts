@@ -105,7 +105,7 @@ export class UsersController {
         userId,
         productId,
       );
-      this.chatGateway.server.emit('addFavoriteProduct', favorite);
+      this.chatGateway.server.emit('updateDashboard', favorite);
       return { message: 'Product added to favorites', favorite };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -126,7 +126,7 @@ export class UsersController {
         userId,
         productId,
       );
-      this.chatGateway.server.emit('deleteFavoriteProduct', favorite);
+      this.chatGateway.server.emit('updateDashboard', favorite);
       return { message: 'Product deleted from favorites', favorite };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -149,7 +149,7 @@ export class UsersController {
     console.log('modifyUserDto:', modifyUserDto);
     try {
       const user = await this.userService.updateUser(userId, modifyUserDto);
-      this.chatGateway.server.emit('updateUser', user);
+      this.chatGateway.server.emit('updateDashboard', user);
       return user;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);

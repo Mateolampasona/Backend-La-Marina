@@ -1,26 +1,40 @@
-import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
-import { Server, Socket } from "socket.io";
+import {
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+  OnGatewayInit,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+} from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({
-    cors:{
-        origin:"*"
-    }
+  cors: {
+    origin: '*',
+  },
 })
-export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
-    @WebSocketServer()
-    server:Server
+export class ChatGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
+  @WebSocketServer()
+  server: Server;
 
-    handleConnection(client:Socket) {
-        console.log(`Client connected: ${client.id}`);
-    }
+  afterInit(server: Server) {
+    server.setMaxListeners(20); // Aumenta el límite de listeners permitidos
+  }
 
-    handleDisconnect(client: Socket) {
-        console.log(`Client disconnected: ${client.id}`);
-    }
+  handleConnection(client: Socket) {
+    console.log(`Client connected: ${client.id}`);
+    client.setMaxListeners(20); // Aumenta el límite de listeners permitidos para cada cliente
+  }
 
-    @SubscribeMessage('message')
-    handleMessage(client:Socket, payload: any):void{
-        console.log(`Mesaje recibido de ${client.id}`, payload)
-        this.server.emit("message",payload)
-}
+  handleDisconnect(client: Socket) {
+    console.log(`Client disconnected: ${client.id}`);
+  }
+
+  @SubscribeMessage('message')
+  handleMessage(client: Socket, payload: any): void {
+    console.log(`Message received from ${client.id}`, payload);
+    this.server.emit('message', payload);
+  }
 }
