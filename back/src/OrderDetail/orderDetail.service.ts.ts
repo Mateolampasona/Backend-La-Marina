@@ -18,7 +18,7 @@ export class OrderDetailsService {
     private readonly orderDetailRepository: Repository<OrderDetail>,
     private readonly productService: ProductService,
     private readonly userService: UsersService,
-  ) { }
+  ) {}
 
   async addProduct(orderDetail: AddProductDto, userId: number) {
     const user = await this.userService.getOneUser(userId);
@@ -31,7 +31,11 @@ export class OrderDetailsService {
       // En caso de que el usuario no tenga una orden crearemos una
       const orderCreated = this.orderRepository.create({
         user: user,
-        createdAt: new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }))
+        createdAt: new Date(
+          new Date().toLocaleString('en-US', {
+            timeZone: 'America/Argentina/Buenos_Aires',
+          }),
+        ),
       });
       await this.orderRepository.save(orderCreated);
 
@@ -60,7 +64,7 @@ export class OrderDetailsService {
 
     // Check if the product already exists in the order
     const existingOrderDetail = order.orderDetails.find(
-      (detail) => detail.product.id === orderDetail.productId,
+      (detail) => detail.product.productId === orderDetail.productId,
     );
 
     if (existingOrderDetail) {
@@ -108,7 +112,7 @@ export class OrderDetailsService {
   }
 
   async deleteOrderDetail(deleteOrderDetailDto: DeleteOrderDetailDto) {
-    const detailId = deleteOrderDetailDto.detailId
+    const detailId = deleteOrderDetailDto.detailId;
     const detail = await this.orderDetailRepository.findOne({
       where: { orderDetailId: detailId },
       relations: ['order'],
