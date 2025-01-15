@@ -6,11 +6,12 @@ import { Order } from './entity/order.entity';
 import { OrderService } from './ordenes.service';
 import { OrderController } from './order.controller';
 import { UsersModule } from 'src/Users/users.module';
+import { ChatGateway } from 'src/gateway/chat.gateway';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Order, OrderDetail]), UsersModule],
-  providers: [OrderService],
   controllers: [OrderController],
-  exports: [OrderService], 
+  providers: [OrderService, ChatGateway],
+  exports: [OrderService],
 })
 export class OrderModule {}

@@ -64,9 +64,11 @@ export class AuthController {
   })
   @ApiResponse({ status: 400, description: 'Error message', type: String })
   @HttpCode(HttpStatus.CREATED)
-  signUp(@Body() createUserDto: CreateUserDto) {
+  async signUp(@Body() createUserDto: CreateUserDto) {
     try {
-      return this.authService.signUp(createUserDto);
+      const newUser = await this.authService.signUp(createUserDto);
+      this.chatGateway.server.emit('adminDashboardUpdate');
+      return newUser;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

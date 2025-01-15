@@ -71,11 +71,17 @@ export class UsersService {
       }
       const newUser = {
         ...createUserDto,
+        createdAt: new Date(
+          new Date().toLocaleString('en-US', {
+            timeZone: 'America/Argentina/Buenos_Aires',
+          }),
+        ),
         password: hashedPassword,
       };
       const createdUser = await this.usersRepository.create(newUser);
       const savedUser = await this.usersRepository.save(newUser);
       const { password: _, ...result } = savedUser;
+
       return result;
     } catch (error) {
       throw new BadRequestException('error creating user', error.message);

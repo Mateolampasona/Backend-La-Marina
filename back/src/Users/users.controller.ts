@@ -163,6 +163,7 @@ export class UsersController {
   @HttpCode(HttpStatus.CREATED)
   async createUser(@Body() createUserDto: CreateUserDto) {
     try {
+      this.chatGateway.server.emit('adminDashboardUpdate');
       return await this.userService.createUser(createUserDto);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -178,6 +179,7 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   async deleteUser(@Param('id') id: number): Promise<{ message: string }> {
     try {
+      this.chatGateway.server.emit('adminDashboardUpdate');
       return await this.userService.deleteUser(id);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -193,6 +195,7 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   async banUser(@Param('id') id: number, @Body() data: BanUserDto) {
     try {
+      this.chatGateway.server.emit('adminDashboardUpdate');
       return await this.userService.banUser(id, data);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -208,6 +211,7 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   async unbanUser(@Param('id') id: number) {
     try {
+      this.chatGateway.server.emit('adminDashboardUpdate');
       return await this.userService.unbanUser(id);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);

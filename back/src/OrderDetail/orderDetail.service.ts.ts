@@ -8,6 +8,7 @@ import { OrderDetail } from './entity/orderDetail.entity';
 import { log } from 'node:console';
 import { UsersService } from 'src/Users/users.services';
 import { DeleteOrderDetailDto } from './dto/deleteOrderDetail.dto';
+import { ChatGateway } from 'src/gateway/chat.gateway';
 
 @Injectable()
 export class OrderDetailsService {
@@ -18,6 +19,7 @@ export class OrderDetailsService {
     private readonly orderDetailRepository: Repository<OrderDetail>,
     private readonly productService: ProductService,
     private readonly userService: UsersService,
+    private readonly chatGateway: ChatGateway,
   ) {}
 
   async addProduct(orderDetail: AddProductDto, userId: number) {
@@ -43,6 +45,7 @@ export class OrderDetailsService {
         where: { orderId: orderCreated.orderId },
         relations: ['orderDetails', 'orderDetails.product'],
       });
+      this.chatGateway.server.emit('adminDashboardUpdate');
     } else {
       const orderId = user.order.orderId;
 

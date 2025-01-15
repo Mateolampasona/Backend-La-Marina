@@ -18,10 +18,14 @@ import { Role } from 'src/Auth/enum/roles.enum';
 import { AuthGuard } from '@nestjs/passport';
 import { RoleGuard } from 'src/Auth/roles.guard';
 import { get } from 'http';
+import { ChatGateway } from 'src/gateway/chat.gateway';
 
 @Controller('Orders')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(
+    private readonly orderService: OrderService,
+    private readonly chatGateway: ChatGateway,
+  ) {}
 
   @Roles(Role.Admin)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
@@ -34,7 +38,6 @@ export class OrderController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
-
 
   @Roles(Role.Admin, Role.User, Role.Guest, Role.Vip)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
@@ -52,7 +55,7 @@ export class OrderController {
 
   @Roles(Role.Admin)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
-  @Get("total-orders")
+  @Get('total-orders')
   @HttpCode(HttpStatus.OK)
   async getTotalOrders() {
     try {
@@ -64,7 +67,7 @@ export class OrderController {
 
   @Roles(Role.Admin)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
-  @Get("last-order")
+  @Get('last-order')
   @HttpCode(HttpStatus.OK)
   async getLastOrder() {
     try {
@@ -94,6 +97,7 @@ export class OrderController {
     const userId = req.user.userId;
 
     try {
+      this.chatGateway.server.emit('adminDashboardUpdate');
       return await this.orderService.deleteOrder(id, userId);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
