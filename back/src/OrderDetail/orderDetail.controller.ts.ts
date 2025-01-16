@@ -34,12 +34,13 @@ export class OrderDetailsController {
   @HttpCode(HttpStatus.CREATED)
   async addOrderDetail(@Body() orderDetail: AddProductDto, @Req() req: any) {
     const userId = req.user.userId;
+    console.log(userId);
     try {
       const detail = await this.orderDetailsService.addProduct(
         orderDetail,
         userId,
       );
-      this.chatGateway.server.emit('cartUpdate', detail);
+      this.chatGateway.server.emit('cartUpdate', detail.user.userId);
       return detail;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -53,7 +54,7 @@ export class OrderDetailsController {
   async deleteOrderDetail(@Body() detailId: DeleteOrderDetailDto) {
     try {
       const detail = await this.orderDetailsService.deleteOrderDetail(detailId);
-      this.chatGateway.server.emit('cartUpdate', detail);
+      this.chatGateway.server.emit('cartUpdate', detail.user.userId);
       return detail;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);

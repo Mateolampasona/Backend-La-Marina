@@ -22,7 +22,7 @@ export class OrderDetailsService {
     private readonly chatGateway: ChatGateway,
   ) {}
 
-  async addProduct(orderDetail: AddProductDto, userId: number) {
+  async addProduct(orderDetail: AddProductDto, userId: number): Promise<Order> {
     const user = await this.userService.getOneUser(userId);
     if (!user) {
       throw new BadRequestException('User not found');
@@ -51,7 +51,7 @@ export class OrderDetailsService {
 
       order = await this.orderRepository.findOne({
         where: { orderId },
-        relations: ['orderDetails', 'orderDetails.product'],
+        relations: ['orderDetails', 'orderDetails.product', 'user'],
       });
       if (!order) {
         throw new BadRequestException('Order not found');
@@ -85,17 +85,17 @@ export class OrderDetailsService {
     }
 
     // Refetch the order with the updated order details
-    order = await this.orderRepository.findOne({
+    const updatedOrder = await this.orderRepository.findOne({
       where: { orderId: order.id },
-      relations: ['orderDetails', 'orderDetails.product'],
+      relations: ['orderDetails', 'orderDetails.product', 'user'],
     });
 
     // Calculate the total order amount
     const totalOrder = await this.calculateTotal(order.id);
-    order.totalOrder = totalOrder;
-    await this.orderRepository.save(order);
+    updatedOrder.totalOrder = totalOrder;
+    await this.orderRepository.save(updatedOrder);
 
-    return order;
+    return updatedOrder;
   }
 
   async calculateTotal(orderId: string) {
@@ -114,7 +114,9 @@ export class OrderDetailsService {
     return total;
   }
 
-  async deleteOrderDetail(deleteOrderDetailDto: DeleteOrderDetailDto) {
+  async deleteOrderDetail(
+    deleteOrderDetailDto: DeleteOrderDetailDto,
+  ): Promise<Order> {
     const detailId = deleteOrderDetailDto.detailId;
     const detail = await this.orderDetailRepository.findOne({
       where: { orderDetailId: detailId },
@@ -137,9 +139,6 @@ export class OrderDetailsService {
     order.totalOrder = total;
     await this.orderRepository.save(order);
 
-    return {
-      message: `Order detail with id ${detailId} has been deleted`,
-      order,
-    };
+    return order;
   }
 }

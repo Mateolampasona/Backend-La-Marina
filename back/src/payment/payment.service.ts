@@ -185,7 +185,7 @@ export class PaymentService {
       );
     }
 
-    this.chatGateway.server.emit('updateDashboard', user);
+    this.chatGateway.server.emit('updateDashboard', user.userId);
     this.chatGateway.server.emit('adminDashboardUpdate');
     return { message: 'Payment successful' };
   }
