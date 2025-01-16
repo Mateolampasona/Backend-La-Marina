@@ -35,7 +35,7 @@ export class ProductService {
 
   async getProductById(id: number): Promise<Product> {
     const product = await this.productRepository.findOne({
-      where: { productId:id },
+      where: { productId: id },
       relations: ['category_id'],
     });
     if (!product) {
@@ -51,20 +51,24 @@ export class ProductService {
     id: number,
     actualizarProducto: Partial<UpdateProductDto>,
   ): Promise<Product> {
-    const product = await this.productRepository.findOne({ where: { productId:id } });
+    const product = await this.productRepository.findOne({
+      where: { productId: id },
+    });
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
     await this.productRepository.update(id, actualizarProducto);
     const productUpdated = await this.productRepository.findOne({
-      where: { productId:id },
+      where: { productId: id },
       relations: ['category_id'],
     });
     return productUpdated;
   }
 
   async deleteProduct(id: number): Promise<string> {
-    const product = await this.productRepository.findOne({ where: { productId:id } });
+    const product = await this.productRepository.findOne({
+      where: { productId: id },
+    });
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
@@ -102,9 +106,10 @@ export class ProductService {
       relations: ['category_id'],
     });
     return productWithCategory;
-  }P
+  }
+  P;
 
-  async addDiscount(productId: number, discount: number) {
+  async addDiscount(productId: number, discount: number): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { productId },
     });

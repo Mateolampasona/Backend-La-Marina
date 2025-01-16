@@ -207,9 +207,6 @@ export class UsersService {
 
   async getTotalUsers(): Promise<number> {
     const totalusers = await this.usersRepository.count();
-    if (!totalusers) {
-      throw new BadRequestException('No users found');
-    }
     return totalusers;
   }
 

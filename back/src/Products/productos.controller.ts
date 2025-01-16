@@ -161,7 +161,12 @@ export class ProductsController {
     @Body('discount') discount: any,
   ) {
     try {
-      return this.productService.addDiscount(productId, discount);
+      const product = this.productService.addDiscount(productId, discount);
+      this.chatGateway.server.emit(
+        'discountProduct',
+        (await product).productId,
+      );
+      return product;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
