@@ -8,8 +8,6 @@ import { Order } from './entity/order.entity';
 
 @Injectable()
 export class OrderService {
-  
-  
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
@@ -38,7 +36,7 @@ export class OrderService {
     }
     const orderId = user.order.orderId;
     const order = await this.orderRepository.findOne({
-      where: {  orderId },
+      where: { orderId },
       relations: ['orderDetails', 'orderDetails.product', 'user'],
     });
 
@@ -50,7 +48,7 @@ export class OrderService {
       where: { orderId },
       relations: ['orderDetails', 'orderDetails.product', 'user'],
     });
-    if(!order){
+    if (!order) {
       throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
     }
 
@@ -59,7 +57,7 @@ export class OrderService {
 
   async deleteOrder(id: string, userId: number) {
     const order = await this.orderRepository.findOne({
-      where: { orderId:id },
+      where: { orderId: id },
       relations: ['user'],
     });
     if (!order) {
@@ -85,22 +83,19 @@ export class OrderService {
     return { message: `Order with ID ${id} sucesfully deleted` };
   }
 
-async getTotalOrders() {
-  const totalOrders = await this.orderRepository.count();
-  if(!totalOrders){
-    throw new HttpException('No orders found', HttpStatus.NOT_FOUND);
+  async getTotalOrders() {
+    const totalOrders = await this.orderRepository.count();
+    return totalOrders;
   }
-  return totalOrders
-}
 
-async getLastOrder() {
-  const [lastOrder] = await this.orderRepository.find({
-    order: { createdAt: 'DESC' },
-    take: 1,
-  });
-  if (!lastOrder) {
-    throw new HttpException('No orders found', HttpStatus.NOT_FOUND);
+  async getLastOrder() {
+    const [lastOrder] = await this.orderRepository.find({
+      order: { createdAt: 'DESC' },
+      take: 1,
+    });
+    if (!lastOrder) {
+      throw new HttpException('No orders found', HttpStatus.NOT_FOUND);
+    }
+    return lastOrder;
   }
-  return lastOrder;
-}
 }
