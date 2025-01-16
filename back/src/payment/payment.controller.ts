@@ -14,10 +14,14 @@ import { Roles } from 'src/decorators/roles.decorator';
 import { Role } from 'src/Auth/enum/roles.enum';
 import { RoleGuard } from 'src/Auth/roles.guard';
 import { AuthGuard } from '@nestjs/passport';
+import { ChatGateway } from 'src/gateway/chat.gateway';
 
 @Controller('payment')
 export class PaymentController {
-  constructor(private readonly paymentService: PaymentService) {}
+  constructor(
+    private readonly paymentService: PaymentService,
+    private readonly chatGatewat: ChatGateway,
+  ) {}
 
   @Roles(Role.Admin, Role.User, Role.Vip)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
@@ -43,11 +47,13 @@ export class PaymentController {
   }
 
   @Post('success')
-  async handleSuccess(@Body('collection_status') collectionStatus: boolean,
-  @Body('payment_id') paymentId: string,
-  @Body('status') status: boolean,
-  @Body('preference_id') preferenceId: string,
-  @Body('id') id: string,) {
+  async handleSuccess(
+    @Body('collection_status') collectionStatus: boolean,
+    @Body('payment_id') paymentId: string,
+    @Body('status') status: boolean,
+    @Body('preference_id') preferenceId: string,
+    @Body('id') id: string,
+  ) {
     console.log('Collection Status:', collectionStatus);
     console.log('Payment ID:', paymentId);
     console.log('Status:', status);
@@ -64,15 +70,14 @@ export class PaymentController {
     } catch (error) {
       throw new BadRequestException(error.message);
     }
-}
+  }
 
-@Get('failure') 
-async handlePaymentFailure() {
-  try{
-    return "Ocurrio un error al realizar el pago"
-  } catch (error) {
-    throw new BadRequestException(error.message);
+  @Get('failure')
+  async handlePaymentFailure() {
+    try {
+      return 'Ocurrio un error al realizar el pago';
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 }
-}
-

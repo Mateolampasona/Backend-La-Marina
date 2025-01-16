@@ -15,7 +15,7 @@ import { User } from 'src/Users/entity/user.entity';
 
 @Entity({ name: 'products' })
 export class Product {
-  @PrimaryGeneratedColumn({ name: 'product_id' })
+  @PrimaryGeneratedColumn()
   productId: number;
 
   @Column({ type: 'varchar', length: 100, nullable: false })

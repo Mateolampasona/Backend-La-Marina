@@ -9,15 +9,16 @@ import { OrderDetail } from 'src/OrderDetail/entity/orderDetail.entity';
 import { ProductsModule } from 'src/Products/productos.module';
 import { Compras } from 'src/Compras/entity/compras.entity';
 import { PurchaseDetail } from 'src/Compras/entity/purchaseDetail.entity';
+import { ChatGateway } from 'src/gateway/chat.gateway';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Order, OrderDetail, Compras, PurchaseDetail]),
     UsersModule,
     OrderModule,
-    ProductsModule
+    ProductsModule,
   ],
   controllers: [PaymentController],
-  providers: [PaymentService],
+  providers: [PaymentService, ChatGateway],
 })
 export class PaymentModule {}

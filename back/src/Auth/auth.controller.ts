@@ -26,14 +26,17 @@ import { Roles } from 'src/decorators/roles.decorator';
 import { Role } from './enum/roles.enum';
 import { AuthGuard } from '@nestjs/passport';
 import { RoleGuard } from './roles.guard';
+import { ChatGateway } from 'src/gateway/chat.gateway';
 
 const API_URL = process.env.FRONT_URL;
 console.log('API_URL:', API_URL);
 
-
 @Controller('Auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly chatGateway: ChatGateway,
+  ) {}
 
   @Post('signIn')
   @ApiOperation({ summary: 'Sign in' })
@@ -61,9 +64,11 @@ export class AuthController {
   })
   @ApiResponse({ status: 400, description: 'Error message', type: String })
   @HttpCode(HttpStatus.CREATED)
-  signUp(@Body() createUserDto: CreateUserDto) {
+  async signUp(@Body() createUserDto: CreateUserDto) {
     try {
-      return this.authService.signUp(createUserDto);
+      const newUser = await this.authService.signUp(createUserDto);
+      this.chatGateway.server.emit('adminDashboardUpdate');
+      return newUser;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -121,6 +126,6 @@ export class AuthController {
   async googleCallback(@Req() req, @Res() res) {
     const response = await this.authService.signInOauth(req.user);
     console.log(response.accessToken);
-    res.redirect(`${API_URL}/login?token=${response.accessToken}` );
+    res.redirect(`${API_URL}/login?token=${response.accessToken}`);
   }
 }

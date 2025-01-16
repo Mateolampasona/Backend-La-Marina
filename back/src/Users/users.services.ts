@@ -15,13 +15,10 @@ import { UserResponseDto } from 'src/users/dto/responseUser.dto';
 import { ProductService } from 'src/Products/productos.service';
 @Injectable()
 export class UsersService {
-  
-  
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
-    private readonly productService: ProductService
-) {}
-  
+    private readonly productService: ProductService,
+  ) {}
 
   async getUsers(): Promise<User[]> {
     const users = await this.usersRepository.find();
@@ -34,18 +31,27 @@ export class UsersService {
   async getOneUser(id: number): Promise<UserResponseDto> {
     const user = await this.usersRepository.findOne({
       where: { userId: id },
-      relations: ['order', 'order.orderDetails', 'order.orderDetails.product', 'compras', 'compras.purchaseDetails', 'compras.purchaseDetails.product', 'favorites'],
+      relations: [
+        'order',
+        'order.orderDetails',
+        'order.orderDetails.product',
+        'compras',
+        'compras.purchaseDetails',
+        'compras.purchaseDetails.product',
+        'favorites',
+      ],
     });
     if (!user) {
       throw new BadRequestException(`User with id ${id} not found`);
     }
-    const {password, authProvider, ...userResponse} = user;
+    const { password, authProvider, ...userResponse } = user;
     return userResponse;
   }
 
   async getUserByEmail(email: string) {
     const user = await this.usersRepository.findOne({
       where: { email },
+      relations: ['favorites', 'compras'],
     });
 
     return user;
@@ -65,11 +71,17 @@ export class UsersService {
       }
       const newUser = {
         ...createUserDto,
+        createdAt: new Date(
+          new Date().toLocaleString('en-US', {
+            timeZone: 'America/Argentina/Buenos_Aires',
+          }),
+        ),
         password: hashedPassword,
       };
       const createdUser = await this.usersRepository.create(newUser);
       const savedUser = await this.usersRepository.save(newUser);
       const { password: _, ...result } = savedUser;
+
       return result;
     } catch (error) {
       throw new BadRequestException('error creating user', error.message);
@@ -94,7 +106,7 @@ export class UsersService {
   async updateUser(
     userId: number,
     modifyUserDto: ModifyUserDto,
-  ): Promise<{ message: string; updatedUser: User }> {
+  ): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { userId: userId },
     });
@@ -106,8 +118,9 @@ export class UsersService {
       await this.usersRepository.update(userId, modifyUserDto);
       const updatedUser = await this.usersRepository.findOne({
         where: { userId: userId },
+        relations: ['favorites', 'compras'],
       });
-      return { message: 'User updated successfully', updatedUser };
+      return updatedUser;
     } catch (error) {
       throw new BadRequestException('error updating user', error.message);
     }
@@ -192,44 +205,84 @@ export class UsersService {
     }
   }
 
-  async getTotalUsers():Promise<number> {
+  async getTotalUsers(): Promise<number> {
     const totalusers = await this.usersRepository.count();
-    if(!totalusers) {
+    if (!totalusers) {
       throw new BadRequestException('No users found');
     }
     return totalusers;
-}
-
-async getLastUser(): Promise<UserResponseDto> {
-  const [lastUser] = await this.usersRepository.find({
-    order: { createdAt: 'DESC' },
-    take: 1,
-  });
-  if (!lastUser) {
-    throw new BadRequestException('No users found');
   }
-  const { password: _, ...result } = lastUser;
-      return result;
-}
 
-async addFavoriteProduct(userId: any, productId: number) {
-  const user = await this.usersRepository.findOne({where:{userId}})
-  if(!user) {
-    throw new BadRequestException('User not found');
+  async getLastUser(): Promise<UserResponseDto> {
+    const [lastUser] = await this.usersRepository.find({
+      order: { createdAt: 'DESC' },
+      take: 1,
+    });
+    if (!lastUser) {
+      throw new BadRequestException('No users found');
+    }
+    const { password: _, ...result } = lastUser;
+    return result;
   }
-  const product = await this.productService.getProductById(productId);
-  if(!product) {
-    throw new BadRequestException('Product not found');
+
+  async addFavoriteProduct(userId: number, productId: number) {
+    const user = await this.usersRepository.findOne({
+      where: { userId },
+      relations: ['favorites', 'compras'],
+    });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    const product = await this.productService.getProductById(productId);
+    if (!product) {
+      throw new BadRequestException('Product not found');
+    }
+    if (user.favorites === undefined || user.favorites === null) {
+      user.favorites = [];
+    }
+
+    const isFavorite = user.favorites.some(
+      (fav) => fav.productId === Number(productId),
+    );
+    if (!isFavorite) {
+      user.favorites.push(product);
+    }
+
+    await this.usersRepository.save(user);
+
+    return user;
   }
-  if(!user.favorites){
-    user.favorites = [];
+
+  async deleteFavoriteProduct(userId: number, productId: number) {
+    const user = await this.usersRepository.findOne({
+      where: { userId },
+      relations: ['favorites', 'compras'],
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    const product = await this.productService.getProductById(productId);
+    if (!product) {
+      throw new BadRequestException('Product not found');
+    }
+
+    if (!user.favorites || user.favorites.length === 0) {
+      throw new BadRequestException('User has no favorites');
+    }
+
+    const updatedFavorites = user.favorites.filter(
+      (fav) => fav.productId !== Number(productId),
+    );
+
+    if (updatedFavorites.length === user.favorites.length) {
+      throw new BadRequestException('Product not found in favorites');
+    }
+
+    user.favorites = updatedFavorites;
+    await this.usersRepository.save(user);
+
+    return user;
   }
-  user.favorites.push(product);
-
-  await this.usersRepository.save(user);
-
-  return {message: 'Product added to favorites', user};
-
-
-}
 }

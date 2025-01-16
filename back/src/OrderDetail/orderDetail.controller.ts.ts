@@ -19,10 +19,14 @@ import { Role } from 'src/Auth/enum/roles.enum';
 import { RoleGuard } from 'src/Auth/roles.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { DeleteOrderDetailDto } from './dto/deleteOrderDetail.dto.js';
+import { ChatGateway } from 'src/gateway/chat.gateway';
 
 @Controller('orderDetails')
 export class OrderDetailsController {
-  constructor(private readonly orderDetailsService: OrderDetailsService) { }
+  constructor(
+    private readonly orderDetailsService: OrderDetailsService,
+    private readonly chatGateway: ChatGateway,
+  ) {}
 
   @Roles(Role.Admin, Role.Guest, Role.User)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
@@ -30,9 +34,14 @@ export class OrderDetailsController {
   @HttpCode(HttpStatus.CREATED)
   async addOrderDetail(@Body() orderDetail: AddProductDto, @Req() req: any) {
     const userId = req.user.userId;
-    console.log(Body)
+    console.log(userId);
     try {
-      return await this.orderDetailsService.addProduct(orderDetail, userId);
+      const detail = await this.orderDetailsService.addProduct(
+        orderDetail,
+        userId,
+      );
+      this.chatGateway.server.emit('cartUpdate', detail.user.userId);
+      return detail;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -44,7 +53,9 @@ export class OrderDetailsController {
   @HttpCode(HttpStatus.OK)
   async deleteOrderDetail(@Body() detailId: DeleteOrderDetailDto) {
     try {
-      return await this.orderDetailsService.deleteOrderDetail(detailId);
+      const detail = await this.orderDetailsService.deleteOrderDetail(detailId);
+      this.chatGateway.server.emit('cartUpdate', detail.user.userId);
+      return detail;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

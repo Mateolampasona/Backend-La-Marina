@@ -8,6 +8,7 @@ import { OrderDetail } from './entity/orderDetail.entity';
 import { UsersModule } from 'src/Users/users.module';
 import { UsersService } from 'src/Users/users.services';
 import { User } from 'src/Users/entity/user.entity';
+import { ChatGateway } from 'src/gateway/chat.gateway';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { User } from 'src/Users/entity/user.entity';
     UsersModule,
   ],
   controllers: [OrderDetailsController],
-  providers: [OrderDetailsService, UsersService],
-  exports: [TypeOrmModule],
+  providers: [OrderDetailsService, UsersService, ChatGateway],
+  exports: [TypeOrmModule, ChatGateway],
 })
 export class OrderDetailModule {}

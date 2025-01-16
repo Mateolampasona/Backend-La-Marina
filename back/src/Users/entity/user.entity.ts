@@ -79,12 +79,14 @@ export class User {
   @OneToMany(() => Compras, (compras) => compras.user, { nullable: true })
   compras: Compras[];
 
-  @ManyToMany(() => Product)
+  @ManyToMany(() => Product, { cascade: true })
   @JoinTable({
     name: 'user_favorites',
     joinColumn: { name: 'user_id', referencedColumnName: 'userId' },
-    inverseJoinColumn: { name: 'product_id', referencedColumnName: 'productId' },
+    inverseJoinColumn: {
+      name: 'product_id',
+      referencedColumnName: 'productId',
+    },
   })
   favorites: Product[];
 }
-

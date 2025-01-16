@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UsersService } from 'src/Users/users.services';
 import { OrderService } from 'src/Orders/ordenes.service';
 import MercadoPagoConfig, { Preference } from 'mercadopago';
@@ -10,24 +16,26 @@ import { Repository } from 'typeorm';
 import { sendPurchaseMail } from 'src/Config/nodeMailer';
 import { PurchaseDetail } from 'src/Compras/entity/purchaseDetail.entity';
 import { Order } from 'src/Orders/entity/order.entity';
+import { ChatGateway } from 'src/gateway/chat.gateway';
 
 dotenvConfig({ path: '.env' });
 const client = new MercadoPagoConfig({
   accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN,
 });
 
-@Injectable(
-
-)
+@Injectable()
 export class PaymentService {
-  
   constructor(
     private readonly userService: UsersService,
     private readonly orderService: OrderService,
     private readonly productService: ProductService,
-    @InjectRepository(Compras) private readonly comprasRepository: Repository<Compras>,
-    @InjectRepository(PurchaseDetail) private readonly purchaseDetailRepository: Repository<PurchaseDetail>,
-    @InjectRepository(Order) private readonly orderRepository: Repository<Order>,
+    @InjectRepository(Compras)
+    private readonly comprasRepository: Repository<Compras>,
+    @InjectRepository(PurchaseDetail)
+    private readonly purchaseDetailRepository: Repository<PurchaseDetail>,
+    @InjectRepository(Order)
+    private readonly orderRepository: Repository<Order>,
+    private readonly chatGateway: ChatGateway,
   ) {}
 
   async createPreference(email: string) {
@@ -95,37 +103,40 @@ export class PaymentService {
     return response;
   }
 
-  async handlePaymentSuccess(collectionStatus: boolean, paymentId: string, status: boolean, id: string, preference_Id: string) {
+  async handlePaymentSuccess(
+    collectionStatus: boolean,
+    paymentId: string,
+    status: boolean,
+    id: string,
+    preference_Id: string,
+  ) {
     const preference = new Preference(client);
     const response = await preference.get({ preferenceId: preference_Id });
 
     const order = await this.orderService.getOrderById(id);
-    if(!order) {
+    if (!order) {
       throw new NotFoundException('Order not found');
     }
-    if(collectionStatus == false){
+    if (collectionStatus == false) {
       throw new NotFoundException('Payment failed');
     }
-    if(status == false) {
+    if (status == false) {
       throw new NotFoundException('Payment failed');
     }
-    if(!paymentId)  {
+    if (!paymentId) {
       throw new NotFoundException('Payment ID not found');
     }
 
     // Obtener la cantidad actualizada de entradas disponibles
-    const updatedInventoryCount = await this.getUpdatedInventoryCount(order.orderId);
-    // Transmitir la actualizaciion de la cantidad de entradas disponibles
-    // this.monitorInventarioGateway.broadcastInventoryUpdate(
-    //   Number(order.id),
-    //   updatedInventoryCount,
-    // );
+    const updatedInventoryCount = await this.getUpdatedInventoryCount(
+      order.orderId,
+    );
 
     const user = await this.userService.getUserByEmail(response.payer.email);
     if (!user) {
       throw new NotFoundException('User not found');
     }
-  
+
     const email = user.email;
     const name = user.name;
     const date = new Date();
@@ -134,61 +145,68 @@ export class PaymentService {
       // Creamos la compra
       const compra = await this.comprasRepository.create({
         user: user,
-        status:"Pendiente",
-        paymentMethod:"Mercado Pago",
-        payment_preference_id:preference_Id,
+        status: 'Pendiente',
+        paymentMethod: 'Mercado Pago',
+        payment_preference_id: preference_Id,
         total: order.totalOrder,
-        purchaseDate: new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }))
-      })
+        purchaseDate: new Date(
+          new Date().toLocaleString('en-US', {
+            timeZone: 'America/Argentina/Buenos_Aires',
+          }),
+        ),
+      });
       // Guaradamos la compra
-      await this.comprasRepository.save(compra)
+      await this.comprasRepository.save(compra);
 
       // Creamos los detalles de compra
-      for(const orderDetail of order.orderDetails) {
+      for (const orderDetail of order.orderDetails) {
         const purchaseDetail = this.purchaseDetailRepository.create({
-          compra:compra,
-          product:orderDetail.product,
-          quantity:orderDetail.quantity,
-          subtotal:orderDetail.product.price
-        })
+          compra: compra,
+          product: orderDetail.product,
+          quantity: orderDetail.quantity,
+          subtotal: orderDetail.product.price,
+        });
         // guardamos el detalle de compra
-        await this.purchaseDetailRepository.save(purchaseDetail)
+        await this.purchaseDetailRepository.save(purchaseDetail);
       }
       // Vaciamos el carrito del usuario
-      order.orderDetails = []
-      order.totalOrder = 0
-      await this.orderRepository.save(order)
+      order.orderDetails = [];
+      order.totalOrder = 0;
+      await this.orderRepository.save(order);
 
-      console.log("Enviando email");
+      console.log('Enviando email');
       await sendPurchaseMail(email, name, date, total);
-      console.log("Email enviado");
-      
-      
-    }
-    catch (error) {
+      console.log('Email enviado');
+    } catch (error) {
       console.error('Error saving pedido:', error);
       throw new HttpException(
         'Failed to save pedido',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+
+    this.chatGateway.server.emit('updateDashboard', user.userId);
+    this.chatGateway.server.emit('adminDashboardUpdate');
     return { message: 'Payment successful' };
-    
   }
-  
+
   async getUpdatedInventoryCount(orderId: string) {
     const order = await this.orderService.getOrderById(orderId);
     if (!order) {
       throw new NotFoundException('Order not found');
     }
-    for(const orderDetails of order.orderDetails) {
-      const product = await this.productService.getProductById(orderDetails.product.productId);
-      if(!product) {
+    for (const orderDetails of order.orderDetails) {
+      const product = await this.productService.getProductById(
+        orderDetails.product.productId,
+      );
+      if (!product) {
         throw new NotFoundException('Product not found');
       }
       product.stock -= orderDetails.quantity;
-      await this.productService.modifyProduct(product.productId, {stock: product.stock});
+      await this.productService.modifyProduct(product.productId, {
+        stock: product.stock,
+      });
+      this.chatGateway.server.emit('stockUpdate', product.productId);
     }
-
   }
 }

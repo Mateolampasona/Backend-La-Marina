@@ -8,6 +8,7 @@ import { OrderDetail } from './entity/orderDetail.entity';
 import { log } from 'node:console';
 import { UsersService } from 'src/Users/users.services';
 import { DeleteOrderDetailDto } from './dto/deleteOrderDetail.dto';
+import { ChatGateway } from 'src/gateway/chat.gateway';
 
 @Injectable()
 export class OrderDetailsService {
@@ -18,9 +19,10 @@ export class OrderDetailsService {
     private readonly orderDetailRepository: Repository<OrderDetail>,
     private readonly productService: ProductService,
     private readonly userService: UsersService,
-  ) { }
+    private readonly chatGateway: ChatGateway,
+  ) {}
 
-  async addProduct(orderDetail: AddProductDto, userId: number) {
+  async addProduct(orderDetail: AddProductDto, userId: number): Promise<Order> {
     const user = await this.userService.getOneUser(userId);
     if (!user) {
       throw new BadRequestException('User not found');
@@ -31,7 +33,11 @@ export class OrderDetailsService {
       // En caso de que el usuario no tenga una orden crearemos una
       const orderCreated = this.orderRepository.create({
         user: user,
-        createdAt: new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }))
+        createdAt: new Date(
+          new Date().toLocaleString('en-US', {
+            timeZone: 'America/Argentina/Buenos_Aires',
+          }),
+        ),
       });
       await this.orderRepository.save(orderCreated);
 
@@ -39,12 +45,13 @@ export class OrderDetailsService {
         where: { orderId: orderCreated.orderId },
         relations: ['orderDetails', 'orderDetails.product'],
       });
+      this.chatGateway.server.emit('adminDashboardUpdate');
     } else {
       const orderId = user.order.orderId;
 
       order = await this.orderRepository.findOne({
         where: { orderId },
-        relations: ['orderDetails', 'orderDetails.product'],
+        relations: ['orderDetails', 'orderDetails.product', 'user'],
       });
       if (!order) {
         throw new BadRequestException('Order not found');
@@ -60,7 +67,7 @@ export class OrderDetailsService {
 
     // Check if the product already exists in the order
     const existingOrderDetail = order.orderDetails.find(
-      (detail) => detail.product.id === orderDetail.productId,
+      (detail) => detail.product.productId === orderDetail.productId,
     );
 
     if (existingOrderDetail) {
@@ -78,17 +85,17 @@ export class OrderDetailsService {
     }
 
     // Refetch the order with the updated order details
-    order = await this.orderRepository.findOne({
+    const updatedOrder = await this.orderRepository.findOne({
       where: { orderId: order.id },
-      relations: ['orderDetails', 'orderDetails.product'],
+      relations: ['orderDetails', 'orderDetails.product', 'user'],
     });
 
     // Calculate the total order amount
     const totalOrder = await this.calculateTotal(order.id);
-    order.totalOrder = totalOrder;
-    await this.orderRepository.save(order);
+    updatedOrder.totalOrder = totalOrder;
+    await this.orderRepository.save(updatedOrder);
 
-    return order;
+    return updatedOrder;
   }
 
   async calculateTotal(orderId: string) {
@@ -107,8 +114,10 @@ export class OrderDetailsService {
     return total;
   }
 
-  async deleteOrderDetail(deleteOrderDetailDto: DeleteOrderDetailDto) {
-    const detailId = deleteOrderDetailDto.detailId
+  async deleteOrderDetail(
+    deleteOrderDetailDto: DeleteOrderDetailDto,
+  ): Promise<Order> {
+    const detailId = deleteOrderDetailDto.detailId;
     const detail = await this.orderDetailRepository.findOne({
       where: { orderDetailId: detailId },
       relations: ['order'],
@@ -130,9 +139,6 @@ export class OrderDetailsService {
     order.totalOrder = total;
     await this.orderRepository.save(order);
 
-    return {
-      message: `Order detail with id ${detailId} has been deleted`,
-      order,
-    };
+    return order;
   }
 }
