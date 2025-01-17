@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Compras } from './entity/compras.entity';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 
 @Injectable()
 export class ComprasService {
@@ -52,5 +52,23 @@ export class ComprasService {
       throw new BadRequestException('No se encontraron compras');
     }
     return compras;
+  }
+
+  async getSalesByMont(montIndex: number, year: number): Promise<Compras[]> {
+    const startDate = new Date(year, montIndex, 1);
+    const endDate = new Date(year, montIndex + 1, 0); // Último día del mes
+
+    console.log('startDate', startDate);
+    console.log('endDate', endDate);
+
+    const sales = await this.comprasRepository.find({
+      where: {
+        purchaseDate: Between(startDate, endDate),
+      },
+    });
+    if (!sales || sales.length === 0) {
+      throw new BadRequestException('Not found sales');
+    }
+    return sales;
   }
 }

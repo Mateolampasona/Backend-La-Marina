@@ -1,9 +1,14 @@
 /* eslint-disable prettier/prettier */
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrderDetail } from 'src/OrderDetail/entity/orderDetail.entity';
 import { UsersService } from 'src/Users/users.services';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { Order } from './entity/order.entity';
 
 @Injectable()
@@ -97,5 +102,23 @@ export class OrderService {
       throw new HttpException('No orders found', HttpStatus.NOT_FOUND);
     }
     return lastOrder;
+  }
+
+  async getOrdersByMont(montIndex: number, year: number): Promise<Order[]> {
+    const startDate = new Date(year, montIndex, 1);
+    const endDate = new Date(year, montIndex + 1, 0); // Último día del mes
+
+    console.log('startDate', startDate);
+    console.log('endDate', endDate);
+
+    const orders = await this.orderRepository.find({
+      where: {
+        createdAt: Between(startDate, endDate),
+      },
+    });
+    if (!orders || orders.length === 0) {
+      throw new BadRequestException('No users found');
+    }
+    return orders;
   }
 }

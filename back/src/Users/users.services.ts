@@ -2,7 +2,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { User } from './entity/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/createUser.dto';
 import { ModifyUserDto } from './dto/modifyUser.dto';
 import * as bcrypt from 'bcrypt';
@@ -281,5 +281,22 @@ export class UsersService {
     await this.usersRepository.save(user);
 
     return user;
+  }
+  async getUserByMont(montIndex: number, year: number): Promise<User[]> {
+    const startDate = new Date(year, montIndex, 1);
+    const endDate = new Date(year, montIndex + 1, 0); // Último día del mes
+
+    console.log('startDate', startDate);
+    console.log('endDate', endDate);
+
+    const users = await this.usersRepository.find({
+      where: {
+        createdAt: Between(startDate, endDate),
+      },
+    });
+    if (!users || users.length === 0) {
+      throw new BadRequestException('No users found');
+    }
+    return users;
   }
 }

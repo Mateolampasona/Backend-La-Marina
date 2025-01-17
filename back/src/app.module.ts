@@ -13,6 +13,7 @@ import { PaymentModule } from './payment/payment.module';
 import { FormModule } from './forms/form.module';
 import { ComprasModule } from './Compras/compras.module';
 import { ChatGateway } from './gateway/chat.gateway';
+import { MontsModule } from './monts/monts.module';
 
 @Module({
   imports: [
@@ -33,7 +34,8 @@ import { ChatGateway } from './gateway/chat.gateway';
     OrderDetailModule,
     PaymentModule,
     FormModule,
-    ComprasModule
+    ComprasModule,
+    MontsModule,
   ],
   controllers: [],
   providers: [ChatGateway],
