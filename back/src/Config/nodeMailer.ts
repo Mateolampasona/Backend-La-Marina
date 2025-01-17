@@ -15,6 +15,8 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+const FrontUrl = process.env.FRONT_URL;
+
 function addSignature(content: string): string {
   return `
     ${content}
@@ -71,15 +73,15 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
 
 export const sendPasswordResetEmail = async (
   email: string,
-  password: string,
   name: string,
+  password: string,
 ) => {
   const subject = 'Recupera tu contraseña 🔑';
   const body = `
     <p>Hola ${name}👋,</p>
     <p>Tu nueva contraseña es: <strong>${password}</strong></p>
     <p>Haz clic en el siguiente enlace para modificar tu contraseña:</p>
-    <p><a href="/" style="color: #FF69B4; text-decoration: none; font-weight: bold;">🔗 Modificar contraseña</a></p>
+    <p><a href=${FrontUrl} style="color: #FF69B4; text-decoration: none; font-weight: bold;">🔗 Modificar contraseña</a></p>
     <p>Si no solicitaste este cambio, ignora este correo.</p>
   `;
 
@@ -173,8 +175,6 @@ export const sendUnbanNotificationEmail = async (
   } catch (error) {
     console.error(`Error sending unban notification email to ${email}:`, error);
   }
-
-  
 };
 
 export const sendContactFormToAdmins = async (
@@ -183,8 +183,8 @@ export const sendContactFormToAdmins = async (
   subject: string,
   message: string,
 ) => {
-  const admins = ["mateolampasona7@gmail.com"]
-  const Subject = `Nuevo mensaje de ${name} 📬`
+  const admins = ['mateolampasona7@gmail.com'];
+  const Subject = `Nuevo mensaje de ${name} 📬`;
   const body = `
     <p>Nombre: ${name}</p>
     <p>Email: ${email}</p>
@@ -194,7 +194,7 @@ export const sendContactFormToAdmins = async (
   const htmlContent = generateEmailContent(Subject, body);
   const mailOptions = {
     from: process.env.EMAIL_USER,
-    to: admins.join(", "),
+    to: admins.join(', '),
     Subject,
     html: htmlContent,
   };
@@ -204,9 +204,7 @@ export const sendContactFormToAdmins = async (
   } catch (error) {
     console.error(`Error sending contact form email to admins:`, error);
   }
-
-
-}
+};
 
 export const sendPurchaseMail = async (
   email: string,
@@ -231,7 +229,10 @@ export const sendPurchaseMail = async (
     <p><a href="https://wa.me/2645724251" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #ffffff; background-color: #25D366; text-decoration: none; border-radius: 5px;">Contactar por WhatsApp</a></p>
   `;
 
-  const htmlContent = generateEmailContent('Compra realizada en La Marina', body);
+  const htmlContent = generateEmailContent(
+    'Compra realizada en La Marina',
+    body,
+  );
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
@@ -244,4 +245,4 @@ export const sendPurchaseMail = async (
   } catch (error) {
     console.error(`Error sending email to ${email}:`, error);
   }
-}
+};
