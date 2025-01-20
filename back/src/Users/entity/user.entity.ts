@@ -76,7 +76,7 @@ export class User {
   @Column({ type: 'boolean', default: false })
   isBanned: boolean;
 
-  @OneToMany(() => Compras, (compras) => compras.user, { nullable: true })
+  @OneToMany(() => Compras, (compras) => compras.user)
   compras: Compras[];
 
   @ManyToMany(() => Product, { cascade: true })
