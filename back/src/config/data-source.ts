@@ -29,7 +29,7 @@ const config = {
     User,
     Product,
     Category,
-    __dirname + '/../**/*.entity{.ts,.js}'
+    __dirname + '/../**/*.entity{.ts,.js}',
   ],
   migrations: ['dist/migrations/*{.js,.ts}'],
   subscribers: [],

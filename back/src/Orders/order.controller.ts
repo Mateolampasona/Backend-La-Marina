@@ -9,6 +9,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Put,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -19,6 +20,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { RoleGuard } from 'src/Auth/roles.guard';
 import { get } from 'http';
 import { ChatGateway } from 'src/gateway/chat.gateway';
+import { DiscountCodeDto } from 'src/discounts/dto/createDiscount.dto';
 
 @Controller('Orders')
 export class OrderController {
@@ -99,6 +101,21 @@ export class OrderController {
     try {
       this.chatGateway.server.emit('adminDashboardUpdate');
       return await this.orderService.deleteOrder(id, userId);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Roles(Role.Admin, Role.User, Role.Vip)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Put('apply-discount/:orderId')
+  @HttpCode(HttpStatus.ACCEPTED)
+  async putDiscount(
+    @Param('orderId') orderId: string,
+    @Body() discountCode: DiscountCodeDto,
+  ) {
+    try {
+      return await this.orderService.putDiscount(orderId, discountCode);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

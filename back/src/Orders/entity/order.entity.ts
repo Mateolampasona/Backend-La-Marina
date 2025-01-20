@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { OrderDetail } from '../../OrderDetail/entity/orderDetail.entity';
 import { Compras } from 'src/Compras/entity/compras.entity';
+import { Discount } from 'src/discounts/entity/discount.entity';
 
 @Entity({ name: 'orders' })
 export class Order {
@@ -40,5 +41,17 @@ export class Order {
   @Column()
   totalOrder: number = 0;
 
+  @Column({
+    nullable: true,
+  })
+  originalTotal: number = 0;
 
+  @Column({
+    nullable: true,
+  })
+  discountAmmount: number = 0;
+
+  @ManyToOne(() => Discount, { nullable: true })
+  @JoinColumn({ name: 'discount_id' })
+  discount: Discount;
 }

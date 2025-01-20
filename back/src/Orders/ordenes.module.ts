@@ -7,9 +7,13 @@ import { OrderService } from './ordenes.service';
 import { OrderController } from './order.controller';
 import { UsersModule } from 'src/Users/users.module';
 import { ChatGateway } from 'src/gateway/chat.gateway';
+import { Discount } from 'src/discounts/entity/discount.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order, OrderDetail]), UsersModule],
+  imports: [
+    TypeOrmModule.forFeature([Order, OrderDetail, Discount]),
+    UsersModule,
+  ],
   controllers: [OrderController],
   providers: [OrderService, ChatGateway],
   exports: [OrderService],
