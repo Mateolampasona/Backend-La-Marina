@@ -6,9 +6,11 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
   OneToMany,
+  JoinColumn,
 } from 'typeorm';
 import { PurchaseDetail } from './purchaseDetail.entity';
 import { Exclude } from 'class-transformer';
+import { Discount } from 'src/discounts/entity/discount.entity';
 
 export enum OrderStatus {
   ENTRADO = 'Entregado',
@@ -18,16 +20,14 @@ export enum OrderStatus {
 
 @Entity('compras')
 export class Compras {
-  @PrimaryGeneratedColumn('uuid',)
+  @PrimaryGeneratedColumn('uuid')
   compraId: string;
-
 
   @ManyToOne(() => User, (user) => user.compras, { eager: true })
   @Exclude()
   user: User;
 
   @Column({
-
     type: 'enum',
     enum: OrderStatus,
     default: OrderStatus.PENDIENTE,
@@ -48,7 +48,7 @@ export class Compras {
 
   @OneToMany(() => PurchaseDetail, (purchaseDetail) => purchaseDetail.compra)
   purchaseDetails: PurchaseDetail[];
-  
+
   @Column()
   total: number;
 }

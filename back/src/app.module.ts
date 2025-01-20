@@ -14,6 +14,7 @@ import { FormModule } from './forms/form.module';
 import { ComprasModule } from './Compras/compras.module';
 import { ChatGateway } from './gateway/chat.gateway';
 import { MontsModule } from './monts/monts.module';
+import { DiscountModule } from './discounts/discount.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { MontsModule } from './monts/monts.module';
     FormModule,
     ComprasModule,
     MontsModule,
+    DiscountModule,
   ],
   controllers: [],
   providers: [ChatGateway],

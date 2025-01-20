@@ -15,14 +15,22 @@ import { Order } from 'src/Orders/entity/order.entity';
 import { OrderDetail } from 'src/OrderDetail/entity/orderDetail.entity';
 import { Compras } from 'src/Compras/entity/compras.entity';
 import { Category } from 'src/Categories/entity/categories.entity';
+import { Discount } from 'src/discounts/entity/discount.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Mont, Product, Order, OrderDetail, Compras,Category ]),
+    TypeOrmModule.forFeature([
+      Mont,
+      Product,
+      Order,
+      OrderDetail,
+      Compras,
+      Category,
+      Discount,
+    ]),
     UsersModule,
     ProductsModule,
-    OrderModule
-    
+    OrderModule,
   ],
   controllers: [MontController],
   providers: [
