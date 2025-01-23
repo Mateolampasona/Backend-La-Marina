@@ -86,12 +86,12 @@ export class OrderDetailsService {
 
     // Refetch the order with the updated order details
     const updatedOrder = await this.orderRepository.findOne({
-      where: { orderId: order.id },
+      where: { orderId: order.orderId },
       relations: ['orderDetails', 'orderDetails.product', 'user'],
     });
 
     // Calculate the total order amount
-    const totalOrder = await this.calculateTotal(order.id);
+    const totalOrder = await this.calculateTotal(order.orderId);
     updatedOrder.totalOrder = totalOrder;
     await this.orderRepository.save(updatedOrder);
 
@@ -111,6 +111,7 @@ export class OrderDetailsService {
       return acc + detail.product.price * detail.quantity;
     }, 0);
 
+    console.log('CalculateTotal', total);
     return total;
   }
 

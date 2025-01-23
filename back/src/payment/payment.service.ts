@@ -17,6 +17,7 @@ import { sendPurchaseMail } from 'src/Config/nodeMailer';
 import { PurchaseDetail } from 'src/Compras/entity/purchaseDetail.entity';
 import { Order } from 'src/Orders/entity/order.entity';
 import { ChatGateway } from 'src/gateway/chat.gateway';
+import { PaymentDto } from './dto/payment.dto';
 
 dotenvConfig({ path: '.env' });
 const client = new MercadoPagoConfig({
@@ -38,8 +39,8 @@ export class PaymentService {
     private readonly chatGateway: ChatGateway,
   ) {}
 
-  async createPreference(email: string) {
-    const user = await this.userService.getUserByEmail(email);
+  async createPreference(data: PaymentDto) {
+    const user = await this.userService.getUserByEmail(data.email);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -53,6 +54,7 @@ export class PaymentService {
 
     const name = user.name;
     const total = order.totalOrder;
+    console.log(total);
     if (isNaN(total)) {
       throw new NotFoundException('Total is not a number');
     }

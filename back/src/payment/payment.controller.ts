@@ -26,9 +26,11 @@ export class PaymentController {
   @Roles(Role.Admin, Role.User, Role.Vip)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
   @Post('create_preference')
-  async createPReference(@Req() req: any): Promise<{ preferenceId: string }> {
-    const email = req.user.email;
-    const preferenceId = await this.paymentService.createPreference(email);
+  async createPreference(
+    @Body() data: PaymentDto,
+  ): Promise<{ preferenceId: string }> {
+    console.log('Data:', data);
+    const preferenceId = await this.paymentService.createPreference(data);
     return { preferenceId };
   }
 
