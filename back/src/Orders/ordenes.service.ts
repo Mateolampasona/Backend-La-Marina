@@ -127,9 +127,7 @@ export class OrderService {
   }
 
   async putDiscount(orderId: string, discountCode: DiscountCodeDto) {
-    console.log('Order ID:', orderId);
-    console.log('Discount Code:', discountCode);
-
+    // Revisamos que exista la orden
     const order = await this.orderRepository.findOne({
       where: { orderId },
       relations: ['orderDetails', 'orderDetails.product', 'user', 'discount'],
@@ -137,57 +135,110 @@ export class OrderService {
     if (!order) {
       throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
     }
-
-    if (order.discount?.discountCode === discountCode.discountCode) {
+    // Revisamos que el código de descuento no esté vacío
+    if (!discountCode.discountCode || discountCode.discountCode.length === 0) {
       throw new HttpException(
-        'Discount already applied',
+        'Discount code is required',
         HttpStatus.BAD_REQUEST,
       );
     }
 
+    // Revisamos si la orden ya tiene un descuento aplicado y es diferente al nuevo descuento
+    if (
+      order.discount &&
+      order.discount.discountCode !== discountCode.discountCode
+    ) {
+      // Restaurar el total original de la orden
+      order.totalOrder = order.originalTotal;
+      order.discount = null;
+      order.discountAmmount = 0;
+    }
+
+    // Revisamos que el descuento exista y sus usos no hayan llegado al máximo
     const discount = await this.discountRepository.findOne({
       where: { discountCode: discountCode.discountCode },
     });
-    if (discount.uses >= discount.maxUses) {
-      throw new HttpException('Discount code expired', HttpStatus.BAD_REQUEST);
-    }
     if (!discount) {
       throw new HttpException('Discount not found', HttpStatus.NOT_FOUND);
     }
+    if (discount.uses >= discount.maxUses) {
+      throw new HttpException('Discount code expired', HttpStatus.BAD_REQUEST);
+    }
 
-    const total = order.totalOrder;
-    const discountAmmount = Math.round(total * (discount.percentage / 100));
-    const totalWithDiscount = total - discountAmmount;
+    if (discount.discountType === 'percentage') {
+      const total = order.totalOrder;
+      const discountAmmount = Math.round(
+        total * (discount.discountValue / 100),
+      );
+      const totalWithDiscount = total - discountAmmount;
+      order.discount = discount;
+      order.totalOrder = totalWithDiscount;
+      order.discountAmmount = discountAmmount;
+      order.originalTotal = total;
 
-    order.discount = discount;
-    order.totalOrder = totalWithDiscount;
-    order.discountAmmount = discountAmmount;
-    order.originalTotal = total;
+      discount.uses = discount.uses + 1;
+      discount.orders = [];
+      discount.orders.push(order);
+      await this.discountRepository.save(discount);
+      await this.orderRepository.save(order);
+      const updatedOrder = await this.orderRepository.findOne({
+        where: { orderId },
+        relations: ['orderDetails', 'orderDetails.product', 'user', 'discount'],
+      });
 
-    discount.uses = discount.uses + 1;
-    discount.orders = [];
-    discount.orders.push(order);
-    await this.discountRepository.save(discount);
-
-    await this.orderRepository.save(order);
-    const updatedOrder = await this.orderRepository.findOne({
-      where: { orderId },
-      relations: ['orderDetails', 'orderDetails.product', 'user', 'discount'],
-    });
-
-    const response = {
-      message: 'Discount applied',
-      updatedOrder: {
-        ...updatedOrder,
-        discount: {
-          discountCode: discount.discountCode,
-          percentage: discount.percentage,
-          uses: discount.uses,
-          maxUses: discount.maxUses,
+      const response = {
+        message: 'Discount applied',
+        updatedOrder: {
+          ...updatedOrder,
+          discount: {
+            discountCode: discount.discountCode,
+            percentage: discount.discountValue,
+            uses: discount.uses,
+            maxUses: discount.maxUses,
+          },
         },
-      },
-    };
+      };
 
-    return response;
+      return response;
+    }
+    if (discount.discountType === 'fixed') {
+      if (order.totalOrder < 10000) {
+        throw new HttpException(
+          'El total de la orden debe superar los $10.000',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      const total = order.totalOrder;
+      const totalWithDiscount = total - discount.discountValue;
+      order.discount = discount;
+      order.totalOrder = totalWithDiscount;
+      order.discountAmmount = discount.discountValue;
+      order.originalTotal = total;
+
+      discount.uses = discount.uses + 1;
+      discount.orders = [];
+      discount.orders.push(order);
+      await this.discountRepository.save(discount);
+      await this.orderRepository.save(order);
+      const updatedOrder = await this.orderRepository.findOne({
+        where: { orderId },
+        relations: ['orderDetails', 'orderDetails.product', 'user', 'discount'],
+      });
+
+      const response = {
+        message: 'Discount applied',
+        updatedOrder: {
+          ...updatedOrder,
+          discount: {
+            discountCode: discount.discountCode,
+            fixed: discount.discountValue,
+            uses: discount.uses,
+            maxUses: discount.maxUses,
+          },
+        },
+      };
+
+      return response;
+    }
   }
 }

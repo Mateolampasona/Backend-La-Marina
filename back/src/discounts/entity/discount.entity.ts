@@ -31,8 +31,8 @@ export class Discount {
     type: 'int',
     nullable: false,
   })
-  @ApiProperty({ description: 'Porcentaje de descuento', example: 10 })
-  percentage: number;
+  @ApiProperty({ description: 'Valor del descuento', example: 10 })
+  discountValue: number;
 
   @Column({
     type: 'date',
@@ -71,6 +71,14 @@ export class Discount {
   })
   @ApiProperty({ description: 'Estado del descuento', example: true })
   isActive: boolean;
+
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: false,
+  })
+  @ApiProperty({ description: 'Tipo de descuento', example: 'percentage' })
+  discountType: string;
 
   @Column({ nullable: true })
   uses: number;
