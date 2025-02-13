@@ -51,7 +51,7 @@ export class OrderDetailsService {
 
       order = await this.orderRepository.findOne({
         where: { orderId },
-        relations: ['orderDetails', 'orderDetails.product', 'user'],
+        relations: ['orderDetails', 'orderDetails.product', 'user', 'discount'],
       });
       if (!order) {
         throw new BadRequestException('Order not found');
@@ -92,12 +92,30 @@ export class OrderDetailsService {
     // Refetch the order with the updated order details
     const updatedOrder = await this.orderRepository.findOne({
       where: { orderId: order.orderId },
-      relations: ['orderDetails', 'orderDetails.product', 'user'],
+      relations: ['orderDetails', 'orderDetails.product', 'user', 'discount'],
     });
 
     // Calculate the total order amount
     const totalOrder = await this.calculateTotal(order.orderId);
     updatedOrder.totalOrder = totalOrder;
+
+    // Recalculate the total with discount if a discount is applied
+    if (updatedOrder.discount) {
+      const discount = updatedOrder.discount;
+      if (discount.discountType === 'percentage') {
+        const discountAmount = Math.round(
+          totalOrder * (discount.discountValue / 100),
+        );
+        updatedOrder.originalTotal = updatedOrder.totalOrder;
+        updatedOrder.totalOrder = totalOrder - discountAmount;
+        updatedOrder.discountAmmount = discountAmount;
+      } else if (discount.discountType === 'fixed') {
+        updatedOrder.originalTotal = updatedOrder.totalOrder;
+        updatedOrder.totalOrder = totalOrder - discount.discountValue;
+        updatedOrder.discountAmmount = discount.discountValue;
+      }
+    }
+
     await this.orderRepository.save(updatedOrder);
 
     return updatedOrder;
@@ -116,7 +134,6 @@ export class OrderDetailsService {
       return acc + detail.product.price * detail.quantity;
     }, 0);
 
-    console.log('CalculateTotal', total);
     return total;
   }
 
@@ -126,8 +143,9 @@ export class OrderDetailsService {
     const detailId = deleteOrderDetailDto.detailId;
     const detail = await this.orderDetailRepository.findOne({
       where: { orderDetailId: detailId },
-      relations: ['order'],
+      relations: ['order', 'order.discount'],
     });
+    console.log('detail', detail);
 
     if (!detail) {
       throw new BadRequestException('Order detail not found');
@@ -136,15 +154,37 @@ export class OrderDetailsService {
 
     await this.orderDetailRepository.delete(detailId);
 
-    const orderDetails = await this.orderDetailRepository.find({
-      where: { order: order },
-    });
-
     const total = await this.calculateTotal(order.orderId);
 
     order.totalOrder = total;
+
+    if (order.discount) {
+      const discount = order.discount;
+      console.log('discount', discount);
+      if (discount.discountType === 'percentage') {
+        const discountAmount = Math.round(
+          total * (discount.discountValue / 100),
+        );
+        console.log('discountAmount', discountAmount);
+        order.originalTotal = total;
+        order.totalOrder = total - discountAmount;
+        order.discountAmmount = discountAmount;
+      } else if (discount.discountType === 'fixed') {
+        order.originalTotal = total;
+        order.totalOrder = total - discount.discountValue;
+        order.discountAmmount = discount.discountValue;
+      }
+    } else {
+      order.originalTotal = total;
+      order.discountAmmount = 0;
+    }
+
     await this.orderRepository.save(order);
 
-    return order;
+    const updatedOrder = await this.orderRepository.findOne({
+      where: { orderId: order.orderId },
+      relations: ['orderDetails', 'orderDetails.product', 'user', 'discount'],
+    });
+    return updatedOrder;
   }
 }
