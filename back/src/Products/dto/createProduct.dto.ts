@@ -62,6 +62,5 @@ export class CreateProductDto {
     description: 'The image url of the product',
   })
   @IsString()
-  @IsNotEmpty()
   imageUrl: string;
 }
