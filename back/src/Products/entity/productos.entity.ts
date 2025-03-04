@@ -33,7 +33,7 @@ export class Product {
   @Column({ type: 'int', nullable: true })
   originalPrice?: number;
 
-  @Column({ type: 'text', nullable: false })
+  @Column({ type: 'text', nullable: true })
   imageUrl: string;
 
   @Column({ type: 'int', nullable: false })

@@ -5,6 +5,7 @@ import {
   IsNumber,
   IsPositive,
   IsBoolean,
+  IsOptional,
 } from 'class-validator';
 
 export class CreateProductDto {
@@ -62,5 +63,6 @@ export class CreateProductDto {
     description: 'The image url of the product',
   })
   @IsString()
+  @IsOptional()
   imageUrl: string;
 }

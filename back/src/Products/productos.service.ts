@@ -65,7 +65,7 @@ export class ProductService {
     return productUpdated;
   }
 
-  async deleteProduct(id: number): Promise<string> {
+  async deleteProduct(id: number): Promise<{ message: string }> {
     const product = await this.productRepository.findOne({
       where: { productId: id },
     });
@@ -73,7 +73,7 @@ export class ProductService {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
     await this.productRepository.delete(id);
-    return `Producto con ID ${id} eliminado correctamente`;
+    return { message: `Producto con ID ${id} eliminado correctamente` };
   }
 
   async createProduct(body: CreateProductDto): Promise<Product> {
@@ -107,8 +107,6 @@ export class ProductService {
     });
     return productWithCategory;
   }
-  P;
-
   async addDiscount(productId: number, discount: number): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { productId },

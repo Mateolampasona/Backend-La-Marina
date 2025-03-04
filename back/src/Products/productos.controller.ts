@@ -117,6 +117,7 @@ export class ProductsController {
   @HttpCode(HttpStatus.CREATED)
   async createProduct(@Body() createProductDto: CreateProductDto) {
     try {
+      console.log('createProductDto', createProductDto);
       return await this.productService.createProduct(createProductDto);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
