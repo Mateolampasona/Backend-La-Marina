@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -15,6 +16,10 @@ import { Role } from 'src/Auth/enum/roles.enum';
 import { RoleGuard } from 'src/Auth/roles.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { ChatGateway } from 'src/gateway/chat.gateway';
+import {
+  EfectivePaymentDto,
+  UpdateEffectivePaymentDto,
+} from './dto/effectivePayment.dto';
 
 @Controller('payment')
 export class PaymentController {
@@ -78,6 +83,33 @@ export class PaymentController {
   async handlePaymentFailure() {
     try {
       return 'Ocurrio un error al realizar el pago';
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  @Roles(Role.Admin, Role.User, Role.Vip)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Post('effective')
+  async handleEffectivePayment(@Body() data: EfectivePaymentDto) {
+    try {
+      const payment = await this.paymentService.handleEffectivePayment(data);
+      return payment;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Put('effective/:purchaseId')
+  async updateEffectivePayment(
+    @Param('purchaseId') purchaseId: UpdateEffectivePaymentDto,
+  ) {
+    try {
+      const payment =
+        await this.paymentService.updateEffectivePayment(purchaseId);
+      return payment;
     } catch (error) {
       throw new BadRequestException(error.message);
     }

@@ -18,7 +18,7 @@ export class ComprasService {
   }
   async getCompraById(id: string) {
     const compra = await this.comprasRepository.findOne({
-      where: { compraId: id },
+      where: { purchaseId: id },
       relations: ['purchaseDetails'],
     });
     if (!compra) {
