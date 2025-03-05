@@ -1,3 +1,4 @@
+import { PaymentStatus } from './../Compras/entity/compras.entity';
 import {
   HttpException,
   HttpStatus,
@@ -18,6 +19,10 @@ import { PurchaseDetail } from 'src/Compras/entity/purchaseDetail.entity';
 import { Order } from 'src/Orders/entity/order.entity';
 import { ChatGateway } from 'src/gateway/chat.gateway';
 import { PaymentDto } from './dto/payment.dto';
+import {
+  EfectivePaymentDto,
+  UpdateEffectivePaymentDto,
+} from './dto/effectivePayment.dto';
 
 dotenvConfig({ path: '.env' });
 const client = new MercadoPagoConfig({
@@ -129,7 +134,7 @@ export class PaymentService {
       throw new NotFoundException('Payment ID not found');
     }
 
-    // Obtener la cantidad actualizada de entradas disponibles
+    // Obtener la cantidad actualizada de productos disponibles
     const updatedInventoryCount = await this.getUpdatedInventoryCount(
       order.orderId,
     );
@@ -147,7 +152,8 @@ export class PaymentService {
       // Creamos la compra
       const compra = await this.comprasRepository.create({
         user: user,
-        status: 'Pendiente',
+        shippingStatus: 'Pendiente',
+        paymentStatus: 'Pagado',
         paymentMethod: 'Mercado Pago',
         payment_preference_id: preference_Id,
         total: order.totalOrder,
@@ -210,5 +216,93 @@ export class PaymentService {
       });
       this.chatGateway.server.emit('stockUpdate', product.productId);
     }
+  }
+
+  async handleEffectivePayment(data: EfectivePaymentDto) {
+    const order = await this.orderRepository.findOne({
+      where: { orderId: data.orderId },
+      relations: ['user', 'orderDetails', 'orderDetails.product'],
+    });
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    const user = await this.userService.getUserByEmail(order.user.email);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const updatedInventoryCount = await this.getUpdatedInventoryCount(
+      order.orderId,
+    );
+    const email = user.email;
+    const name = user.name;
+    const date = new Date();
+    const total = order.totalOrder;
+    try {
+      // Creamos la compra
+      const compra = await this.comprasRepository.create({
+        user: user,
+        shippingStatus: 'Pendiente',
+        paymentStatus: 'Pendiente',
+        paymentMethod: 'Efectivo',
+        total: order.totalOrder,
+        purchaseDate: new Date(
+          new Date().toLocaleString('en-US', {
+            timeZone: 'America/Argentina/Buenos_Aires',
+          }),
+        ),
+      });
+      await this.comprasRepository.save(compra);
+      // Creamos los detalles de compra
+      for (const orderDetail of order.orderDetails) {
+        const purchaseDetail = this.purchaseDetailRepository.create({
+          compra: compra,
+          product: orderDetail.product,
+          quantity: orderDetail.quantity,
+          subtotal: orderDetail.product.price,
+        });
+        // guardamos el detalle de compra
+        await this.purchaseDetailRepository.save(purchaseDetail);
+      }
+      // Vaciamos el carrito del usuario
+      order.orderDetails = [];
+      order.totalOrder = 0;
+      await this.orderRepository.save(order);
+      console.log('Enviando email');
+      await sendPurchaseMail(email, name, date, total);
+      console.log('Email enviado');
+    } catch (error) {
+      console.error('Error saving pedido:', error);
+      throw new HttpException(
+        'Failed to save pedido',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    this.chatGateway.server.emit('updateDashboard', user.userId);
+    this.chatGateway.server.emit('adminDashboardUpdate');
+    return { message: 'Payment successful' };
+  }
+
+  async updateEffectivePayment(data: UpdateEffectivePaymentDto) {
+    const compra = await this.comprasRepository.findOne({
+      where: { purchaseId: data.purchaseId },
+    });
+    if (!compra) {
+      throw new NotFoundException('Purchase not found');
+    }
+    compra.paymentStatus = data.paymentStatus;
+    compra.shippingStatus = data.shippingStatus;
+    await this.comprasRepository.save(compra);
+    return { message: 'Datos actualizados' };
+  }
+
+  async getPurchases() {
+    const compras = await this.comprasRepository.find({
+      relations: ['user', 'purchaseDetails', 'purchaseDetails.product'],
+    });
+    if (!compras) {
+      throw new NotFoundException('Purchases not found');
+    }
+    return;
   }
 }

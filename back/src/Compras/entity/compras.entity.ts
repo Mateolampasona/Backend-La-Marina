@@ -12,16 +12,21 @@ import { PurchaseDetail } from './purchaseDetail.entity';
 import { Exclude } from 'class-transformer';
 import { Discount } from 'src/discounts/entity/discount.entity';
 
-export enum OrderStatus {
-  ENTRADO = 'Entregado',
-  PENDIENTE = 'Pendiente',
+export enum PaymentStatus {
+  PAGADO = 'Pagado',
+  PENDIENTE = 'Pendiente de pago',
   CANCELADO = 'Cancelado',
+}
+export enum ShipingStatus {
+  PENDIENTE = 'Pendiente',
+  ENVIADO = 'Enviado',
+  ENTREGADO = 'Entregado',
 }
 
 @Entity('compras')
 export class Compras {
   @PrimaryGeneratedColumn('uuid')
-  compraId: string;
+  purchaseId: string;
 
   @ManyToOne(() => User, (user) => user.compras, { eager: true })
   @Exclude()
@@ -29,10 +34,17 @@ export class Compras {
 
   @Column({
     type: 'enum',
-    enum: OrderStatus,
-    default: OrderStatus.PENDIENTE,
+    enum: PaymentStatus,
+    default: PaymentStatus.PENDIENTE,
   })
-  status: string;
+  paymentStatus: string;
+
+  @Column({
+    type: 'enum',
+    enum: ShipingStatus,
+    default: ShipingStatus.PENDIENTE,
+  })
+  shippingStatus: string;
 
   @CreateDateColumn({
     type: 'timestamp',
