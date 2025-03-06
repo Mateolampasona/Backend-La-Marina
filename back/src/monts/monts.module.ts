@@ -16,6 +16,7 @@ import { OrderDetail } from 'src/OrderDetail/entity/orderDetail.entity';
 import { Compras } from 'src/Compras/entity/compras.entity';
 import { Category } from 'src/Categories/entity/categories.entity';
 import { Discount } from 'src/discounts/entity/discount.entity';
+import { Address } from 'src/addresses/entity/addresses.entity';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { Discount } from 'src/discounts/entity/discount.entity';
       Compras,
       Category,
       Discount,
+      Address,
     ]),
     UsersModule,
     ProductsModule,

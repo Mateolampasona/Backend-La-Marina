@@ -157,6 +157,8 @@ export class PaymentService {
         paymentMethod: 'Mercado Pago',
         payment_preference_id: preference_Id,
         total: order.totalOrder,
+        shipment: order.isShipment,
+        address: order.address,
         purchaseDate: new Date(
           new Date().toLocaleString('en-US', {
             timeZone: 'America/Argentina/Buenos_Aires',

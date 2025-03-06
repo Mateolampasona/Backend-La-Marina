@@ -12,6 +12,7 @@ import {
 import { OrderDetail } from '../../OrderDetail/entity/orderDetail.entity';
 import { Compras } from 'src/Compras/entity/compras.entity';
 import { Discount } from 'src/discounts/entity/discount.entity';
+import { Address } from 'src/addresses/entity/addresses.entity';
 
 @Entity({ name: 'orders' })
 export class Order {
@@ -54,4 +55,13 @@ export class Order {
   @ManyToOne(() => Discount, { nullable: true })
   @JoinColumn({ name: 'discount_id' })
   discount: Discount;
+
+  @ManyToOne(() => Address, { nullable: true })
+  @JoinColumn({ name: 'address_id' })
+  address: Address;
+
+  @Column({
+    nullable: false,
+  })
+  isShipment: boolean = false;
 }

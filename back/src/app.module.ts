@@ -15,6 +15,7 @@ import { ComprasModule } from './Compras/compras.module';
 import { ChatGateway } from './gateway/chat.gateway';
 import { MontsModule } from './monts/monts.module';
 import { DiscountModule } from './discounts/discount.module';
+import { AddressesModule } from './addresses/addresses.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { DiscountModule } from './discounts/discount.module';
     ComprasModule,
     MontsModule,
     DiscountModule,
+    AddressesModule,
   ],
   controllers: [],
   providers: [ChatGateway],

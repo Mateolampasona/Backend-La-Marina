@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Address } from 'src/addresses/entity/addresses.entity';
 import { Role } from 'src/Auth/enum/roles.enum';
 import { Compras } from 'src/Compras/entity/compras.entity';
 import { Order } from 'src/Orders/entity/order.entity';
@@ -89,4 +90,7 @@ export class User {
     },
   })
   favorites: Product[];
+
+  @OneToMany(() => Address, (address) => address.user)
+  addresses: Address[];
 }
