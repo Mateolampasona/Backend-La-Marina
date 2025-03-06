@@ -7,10 +7,12 @@ import {
   PrimaryGeneratedColumn,
   OneToMany,
   JoinColumn,
+  OneToOne,
 } from 'typeorm';
 import { PurchaseDetail } from './purchaseDetail.entity';
 import { Exclude } from 'class-transformer';
 import { Discount } from 'src/discounts/entity/discount.entity';
+import { Address } from 'src/addresses/entity/addresses.entity';
 
 export enum PaymentStatus {
   PAGADO = 'Pagado',
@@ -61,6 +63,18 @@ export class Compras {
   @OneToMany(() => PurchaseDetail, (purchaseDetail) => purchaseDetail.compra)
   purchaseDetails: PurchaseDetail[];
 
+  @Column({ type: 'boolean', default: false })
+  shipment: boolean;
+
+  @OneToOne(() => Address, { nullable: true })
+  @JoinColumn()
+  address: Address;
+
   @Column()
   total: number;
+
+  @Column({
+    nullable: false,
+  })
+  isShipment: boolean;
 }

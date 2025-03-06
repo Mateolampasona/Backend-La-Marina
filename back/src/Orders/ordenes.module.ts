@@ -8,10 +8,11 @@ import { OrderController } from './order.controller';
 import { UsersModule } from 'src/Users/users.module';
 import { ChatGateway } from 'src/gateway/chat.gateway';
 import { Discount } from 'src/discounts/entity/discount.entity';
+import { Address } from 'src/addresses/entity/addresses.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Order, OrderDetail, Discount]),
+    TypeOrmModule.forFeature([Order, OrderDetail, Discount, Address]),
     UsersModule,
   ],
   controllers: [OrderController],

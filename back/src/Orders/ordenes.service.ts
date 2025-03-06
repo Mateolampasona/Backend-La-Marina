@@ -12,6 +12,8 @@ import { Between, Repository } from 'typeorm';
 import { Order } from './entity/order.entity';
 import { Discount } from 'src/discounts/entity/discount.entity';
 import { DiscountCodeDto } from 'src/discounts/dto/createDiscount.dto';
+import { UpdateOrderShipmentDto } from './dto/createOrder.dto';
+import { Address } from 'src/addresses/entity/addresses.entity';
 
 @Injectable()
 export class OrderService {
@@ -23,11 +25,19 @@ export class OrderService {
     private readonly userService: UsersService,
     @InjectRepository(Discount)
     private readonly discountRepository: Repository<Discount>,
+    @InjectRepository(Address)
+    private readonly addressRepository: Repository<Address>,
   ) {}
 
   async getOrders() {
     const orders = await this.orderRepository.find({
-      relations: ['orderDetails', 'user', 'orderDetails.product', 'discount'],
+      relations: [
+        'orderDetails',
+        'user',
+        'orderDetails.product',
+        'discount',
+        'address',
+      ],
     });
     if (!orders) {
       throw new HttpException('No orders found', HttpStatus.NOT_FOUND);
@@ -46,7 +56,13 @@ export class OrderService {
     const orderId = user.order.orderId;
     const order = await this.orderRepository.findOne({
       where: { orderId },
-      relations: ['orderDetails', 'orderDetails.product', 'user', 'discount'],
+      relations: [
+        'orderDetails',
+        'orderDetails.product',
+        'user',
+        'discount',
+        'address',
+      ],
     });
 
     return order;
@@ -55,7 +71,13 @@ export class OrderService {
   async getOrderById(orderId: string) {
     const order = await this.orderRepository.findOne({
       where: { orderId },
-      relations: ['orderDetails', 'orderDetails.product', 'user', 'discount'],
+      relations: [
+        'orderDetails',
+        'orderDetails.product',
+        'user',
+        'discount',
+        'address',
+      ],
     });
     if (!order) {
       throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
@@ -240,5 +262,32 @@ export class OrderService {
 
       return response;
     }
+  }
+  async updateOrderShipment(
+    id: string,
+    updateOrderShipmentDto: UpdateOrderShipmentDto,
+  ) {
+    const order = await this.orderRepository.findOne({
+      where: { orderId: id },
+    });
+    if (!order) {
+      throw new BadRequestException(`Order with ID ${id} not found`);
+    }
+    order.isShipment = updateOrderShipmentDto.IsShipment;
+    if (updateOrderShipmentDto.IsShipment) {
+      const address = await this.addressRepository.findOne({
+        where: { addressId: updateOrderShipmentDto.addressId },
+      });
+      if (!address) {
+        throw new BadRequestException(
+          `Address with ID ${updateOrderShipmentDto.addressId} not found`,
+        );
+      }
+      order.address = address;
+    } else {
+      order.address = null;
+    }
+    await this.orderRepository.save(order);
+    return order;
   }
 }
