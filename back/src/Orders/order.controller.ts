@@ -115,8 +115,20 @@ export class OrderController {
     @Param('orderId') orderId: string,
     @Body() discountCode: DiscountCodeDto,
   ) {
+    console.log('discountCode', discountCode);
     try {
       return await this.orderService.putDiscount(orderId, discountCode);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+  @Roles(Role.Admin, Role.User, Role.Vip)
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Put('remove-discount/:orderId')
+  @HttpCode(HttpStatus.ACCEPTED)
+  async removeDiscount(@Param('orderId') orderId: string) {
+    try {
+      return await this.orderService.removeDiscount(orderId);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

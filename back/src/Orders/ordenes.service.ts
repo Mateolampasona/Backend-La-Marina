@@ -149,6 +149,7 @@ export class OrderService {
   }
 
   async putDiscount(orderId: string, discountCode: DiscountCodeDto) {
+    const code = discountCode.discountCode;
     // Revisamos que exista la orden
     const order = await this.orderRepository.findOne({
       where: { orderId },
@@ -158,7 +159,7 @@ export class OrderService {
       throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
     }
     // Revisamos que el código de descuento no esté vacío
-    if (!discountCode.discountCode || discountCode.discountCode.length === 0) {
+    if (!code || code.length === 0) {
       throw new HttpException(
         'Discount code is required',
         HttpStatus.BAD_REQUEST,
@@ -166,10 +167,7 @@ export class OrderService {
     }
 
     // Revisamos si la orden ya tiene un descuento aplicado y es diferente al nuevo descuento
-    if (
-      order.discount &&
-      order.discount.discountCode !== discountCode.discountCode
-    ) {
+    if (order.discount && order.discount.discountCode !== code) {
       // Restaurar el total original de la orden
       order.totalOrder = order.originalTotal;
       order.discount = null;
@@ -178,7 +176,7 @@ export class OrderService {
 
     // Revisamos que el descuento exista y sus usos no hayan llegado al máximo
     const discount = await this.discountRepository.findOne({
-      where: { discountCode: discountCode.discountCode },
+      where: { discountCode: code },
     });
     if (!discount) {
       throw new HttpException('Discount not found', HttpStatus.NOT_FOUND);
@@ -203,25 +201,8 @@ export class OrderService {
       discount.orders.push(order);
       await this.discountRepository.save(discount);
       await this.orderRepository.save(order);
-      const updatedOrder = await this.orderRepository.findOne({
-        where: { orderId },
-        relations: ['orderDetails', 'orderDetails.product', 'user', 'discount'],
-      });
 
-      const response = {
-        message: 'Discount applied',
-        updatedOrder: {
-          ...updatedOrder,
-          discount: {
-            discountCode: discount.discountCode,
-            percentage: discount.discountValue,
-            uses: discount.uses,
-            maxUses: discount.maxUses,
-          },
-        },
-      };
-
-      return response;
+      return order.discountAmmount;
     }
     if (discount.discountType === 'fixed') {
       if (order.totalOrder < 10000) {
@@ -289,5 +270,39 @@ export class OrderService {
     }
     await this.orderRepository.save(order);
     return order;
+  }
+
+  async removeDiscount(orderId: string) {
+    const order = await this.orderRepository.findOne({
+      where: { orderId },
+      relations: ['discount'],
+    });
+    if (!order) {
+      throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
+    }
+    if (order.discount === null) {
+      throw new HttpException(
+        'Order does not have a discount',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const discount = await this.discountRepository.findOne({
+      where: { id: order.discount.id },
+    });
+    if (!discount) {
+      throw new HttpException('Discount not found', HttpStatus.NOT_FOUND);
+    }
+    order.totalOrder = order.originalTotal;
+    order.originalTotal = null;
+    order.discount = null;
+    order.discountAmmount = 0;
+    discount.uses = discount.uses - 1;
+    await this.orderRepository.save(order);
+    await this.discountRepository.save(discount);
+    const updatedOrder = await this.orderRepository.findOne({
+      where: { orderId },
+      relations: ['orderDetails', 'orderDetails.product', 'user', 'discount'],
+    });
+    return updatedOrder;
   }
 }
