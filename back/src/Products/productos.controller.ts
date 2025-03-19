@@ -14,6 +14,7 @@ import {
   UploadedFile,
   UseGuards,
   UseInterceptors,
+  Request,
 } from '@nestjs/common';
 import { ProductService } from './productos.service';
 import { UpdateProductDto } from './dto/UpdateProduct.dto';
@@ -114,11 +115,30 @@ export class ProductsController {
   @ApiOperation({ summary: 'Create product' })
   @ApiResponse({ status: 201, description: 'Product created', type: Product })
   @ApiResponse({ status: 400, description: 'Error message', type: String })
+  @UseInterceptors(FileInterceptor('image'))
   @HttpCode(HttpStatus.CREATED)
-  async createProduct(@Body() createProductDto: CreateProductDto) {
+  async createProduct(
+    @Body() createProductDto: CreateProductDto,
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req,
+  ) {
     try {
+      const userId = req.user.userId;
       console.log('createProductDto', createProductDto);
-      return await this.productService.createProduct(createProductDto);
+
+      const imageUrl = await this.cloudinaryService.uploadImage(file);
+
+      const product = {
+        ...createProductDto,
+        imageUrl,
+      };
+
+      const productCreated = await this.productService.createProduct(
+        product,
+        userId,
+      );
+
+      return productCreated;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

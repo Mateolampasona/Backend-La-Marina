@@ -11,6 +11,8 @@ import { Repository } from 'typeorm';
 import { UpdateProductDto } from './dto/UpdateProduct.dto';
 import { Category } from 'src/Categories/entity/categories.entity';
 import { CreateProductDto } from './dto/createProduct.dto';
+import { User } from 'src/Users/entity/user.entity';
+import { Role } from 'src/Auth/enum/roles.enum';
 
 @Injectable()
 export class ProductService {
@@ -19,6 +21,7 @@ export class ProductService {
     private readonly productRepository: Repository<Product>,
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
   async getProducts(): Promise<Product[]> {
@@ -76,10 +79,24 @@ export class ProductService {
     return { message: `Producto con ID ${id} eliminado correctamente` };
   }
 
-  async createProduct(body: CreateProductDto): Promise<Product> {
+  async createProduct(
+    body: CreateProductDto,
+    userId: number,
+  ): Promise<Product> {
     const { name, description, price, stock, imageUrl, isActive, category_id } =
       body;
 
+    const user = await this.userRepository.findOne({ where: { userId } });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+    if (user.role !== Role.Admin) {
+      throw new HttpException(
+        'You do not have permission to create a product',
+        HttpStatus.FORBIDDEN,
+      );
+    }
     // Buscamos la categoría completa en la base de datos
     const categoria = await this.categoryRepository.findOne({
       where: { categoryId: category_id },

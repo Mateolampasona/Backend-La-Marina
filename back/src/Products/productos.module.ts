@@ -8,9 +8,10 @@ import { Category } from 'src/Categories/entity/categories.entity';
 import { CloudinaryConfig } from 'src/Config/cloudinary';
 import { CloudinaryService } from './cloudinary.service';
 import { ChatGateway } from 'src/gateway/chat.gateway';
+import { User } from 'src/Users/entity/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Product, Category])],
+  imports: [TypeOrmModule.forFeature([Product, Category, User])],
   controllers: [ProductsController],
   providers: [ProductService, CloudinaryConfig, CloudinaryService, ChatGateway],
   exports: [ProductService, ChatGateway], // Export ProductService here
