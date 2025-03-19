@@ -146,13 +146,13 @@ export class ProductsController {
 
   @Roles(Role.Admin)
   @UseGuards(AuthGuard('jwt'), RoleGuard)
-  @Post(':id/upload-image')
+  @Post(':id/update-image')
   @UseInterceptors(FileInterceptor('image'))
   @ApiOperation({ summary: 'Upload image' })
   @ApiResponse({ status: 201, description: 'Image uploaded', type: String })
   @ApiResponse({ status: 400, description: 'Error message', type: String })
   @HttpCode(HttpStatus.CREATED)
-  async uploadImage(
+  async update(
     @UploadedFile() file: Express.Multer.File,
     @Param('id', ParseIntPipe) id: number,
   ) {
