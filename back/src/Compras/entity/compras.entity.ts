@@ -63,7 +63,7 @@ export class Compras {
   @OneToMany(() => PurchaseDetail, (purchaseDetail) => purchaseDetail.compra)
   purchaseDetails: PurchaseDetail[];
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'boolean', default: false, nullable: false })
   shipment: boolean;
 
   @OneToOne(() => Address, { nullable: true })
@@ -75,6 +75,7 @@ export class Compras {
 
   @Column({
     nullable: false,
+    default: false,
   })
   isShipment: boolean;
 }
